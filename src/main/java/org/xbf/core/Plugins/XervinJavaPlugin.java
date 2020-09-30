@@ -2,6 +2,8 @@ package org.xbf.core.Plugins;
 
 import ch.qos.logback.classic.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbf.core.Plugins.config.PluginConfig;
+import org.xbf.core.Plugins.config.PluginConfigLoader;
 
 public class XervinJavaPlugin {
 	
@@ -19,6 +21,14 @@ public class XervinJavaPlugin {
 	 * This is where command and module registration is supposed to happen
 	 */
 	public void register() {}
+	
+	public XPlugin getPluginInfo() {
+		return getClass().getAnnotation(XPlugin.class);
+	}
+	
+	public <T extends PluginConfig> T getConfig(Class<T> baseClass)  {
+		return new PluginConfigLoader<T>().loadConfig(getPluginInfo().name(), baseClass);
+	}
 	
 	
 }

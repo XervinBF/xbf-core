@@ -44,7 +44,7 @@ import ch.qos.logback.classic.LoggerContext;
 
 public class XBF {
 
-	public static final String BOT_FRAMEWORK_NAME = "XBF5";
+	public static final String BOT_FRAMEWORK_NAME = "XBF";
 	static XConfiguration config;
 	static final Logger logger = (Logger) LoggerFactory.getLogger(XBF.class);
 	
@@ -71,7 +71,7 @@ public class XBF {
 			h.start();
 		});
 		
-		logger.info(BOT_FRAMEWORK_NAME + " bot framework has been started");
+		logger.info(BOT_FRAMEWORK_NAME + " has been started");
 		
 		logger.info("Started bot as name '" + config.BOT_NAME + "'");
 		
