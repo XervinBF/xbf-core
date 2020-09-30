@@ -252,7 +252,7 @@ public class SmartTable<T extends SmartTableObject> {
 	}
 
 	private boolean HandleException(Exception e) {
-		e.printStackTrace();
+		l.error("Some error occured", e);
 		if (connector.shouldCreateTable(e.getMessage())) {
 			try {
 				createTable();
@@ -293,7 +293,8 @@ public class SmartTable<T extends SmartTableObject> {
 		try {
 			connector.insertData(tb, datamap);
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(HandleException(e))
+				return insert(obj);
 		}
 		return (T) obj;
 	}
@@ -307,6 +308,9 @@ public class SmartTable<T extends SmartTableObject> {
 			return connector.has(tb, where);
 		} catch (Exception e) {
 			e.printStackTrace();
+			if(HandleException(e)) {
+				return hasWithQuery(where);
+			}
 			return false;
 		}
 	}

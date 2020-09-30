@@ -26,14 +26,16 @@ public class DBResult {
 		if(row.length != columns.size())
 			throw new RuntimeException("Row length must be equal to the amount of columns");
 		rows.add(row);
-		String[] objects = new String[row.length];
-		for (int i = 0; i < row.length; i++) {
-			objects[i] = row[i] + "";
-			if(row[i] instanceof String) {
-				objects[i] = objects[i].trim();
+		if(logger.isTraceEnabled()) {
+			String[] objects = new String[row.length];
+			for (int i = 0; i < row.length; i++) {
+				objects[i] = row[i] + "";
+				if(row[i] instanceof String) {
+					objects[i] = objects[i].trim();
+				}
 			}
+			logger.trace("Adding row: " + new Gson().toJson(objects));
 		}
-		logger.trace("Adding row: " + new Gson().toJson(objects));
 	}
 	
 	public void addColumn(String columnName) {
