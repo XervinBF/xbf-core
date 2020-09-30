@@ -1,15 +1,15 @@
-# Xervin5
-Xervin Bot Framework v5
+# XBF Core
+Xervin Bot Framework
 
 ## Build
 ![Development Build](https://github.com/XervinBF/Xervin5/workflows/Development%20Build/badge.svg)
 ![Release Build](https://github.com/XervinBF/Xervin5/workflows/Release%20Build/badge.svg)
 
 ## What is this?
-Xerbin Bot Framework v5 / Xervin5 / **XBF5** or whatever you would like to call it. Is one of the most powerful bot frameworks with native support for databases and multiple ways to host your bot. Want to host a discord bot, use the discord bot plugin, maybe a slack bot, use the slack bot plugin. Or maybe even both bots in the same application. That is no problem. 
+Xerbin Bot Framework / XervinBF / **XBF** or whatever you would like to call it. Is one of the most powerful bot frameworks with native support for databases and multiple ways to host your bot. Want to host a discord bot, use the discord bot plugin, maybe a slack bot, use the slack bot plugin. Or maybe even both bots in the same application. That is no problem. 
 
 ## But how?
-**XBF5** uses plugins built by the community. Some plugins are provided by the authors.
+**XBF** uses plugins built by the community. Some plugins are provided by the authors.
 
 ## What plugins can i make?
 You can make your own:
