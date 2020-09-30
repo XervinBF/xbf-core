@@ -2,8 +2,8 @@
 Xervin Bot Framework
 
 ## Build
-![Development Build](https://github.com/XervinBF/Xervin5/workflows/Development%20Build/badge.svg)
-![Release Build](https://github.com/XervinBF/Xervin5/workflows/Release%20Build/badge.svg)
+![Development Build](https://github.com/XervinBF/xbf-core/workflows/Development%20Build/badge.svg)
+![Release Build](https://github.com/XervinBF/xbf-core/workflows/Release%20Build/badge.svg)
 
 ## What is this?
 Xerbin Bot Framework / XervinBF / **XBF** or whatever you would like to call it. Is one of the most powerful bot frameworks with native support for databases and multiple ways to host your bot. Want to host a discord bot, use the discord bot plugin, maybe a slack bot, use the slack bot plugin. Or maybe even both bots in the same application. That is no problem. 
