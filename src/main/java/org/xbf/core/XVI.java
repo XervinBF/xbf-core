@@ -9,7 +9,9 @@ public class XVI {
 			new Version("0.0.5"        , "Krawlo"    , "2020-09-29", "- DBProvider registration didn't work\n- Better plugin depends checking"),
 			new Version("0.0.6"        , "Krawlo"    , "2020-09-29", "- DBProvider can throw exceptions"),
 			new Version("0.0.7"        , "Krawlo"    , "2020-09-29", "- Make easier to implement database providers for databases that do not return a ResultSet"),
+			new Version("0.0.8"        , "Krawlo"    , "2020-09-30", "- Plugin Configuration"),
 
+			
 	};
 
 	public static Version version = versions[versions.length - 1];
