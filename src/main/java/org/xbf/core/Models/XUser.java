@@ -234,7 +234,7 @@ public class XUser extends SmartTableObject {
 				.add("configkey", key)
 			);
 		if(cfg == null) return null;
-		return cfg.configValue.trim();
+		return cfg.configValue;
 	}
 	
 	public String getConfig(String key) {

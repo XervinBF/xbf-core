@@ -17,7 +17,7 @@ public class PermissionsManager {
 		if(c.basePermission != null) {
 			return r.user.hasPermission(c.basePermission);
 		}
-		Optional<Module> opm = XBF.getModule(c.command);
+		Optional<Module> opm = XBF.getModuleForCommand(c.command);
 		if(!opm.isPresent()) return false;
 		Module m = opm.get();
 

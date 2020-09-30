@@ -10,6 +10,7 @@ public class XVI {
 			new Version("0.0.6"        , "Krawlo"    , "2020-09-29", "- DBProvider can throw exceptions"),
 			new Version("0.0.7"        , "Krawlo"    , "2020-09-29", "- Make easier to implement database providers for databases that do not return a ResultSet"),
 			new Version("0.0.8"        , "Krawlo"    , "2020-09-30", "- Plugin Configuration"),
+			new Version("0.0.9"        , "Krawlo"    , "2020-09-30", "- Small plugin config fixes\n- Improvments in DBResult\n- Add automatic field adding to SmartTable\n- Other small fixes"),
 
 			
 	};

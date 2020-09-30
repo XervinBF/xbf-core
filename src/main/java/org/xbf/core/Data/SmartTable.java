@@ -262,6 +262,15 @@ public class SmartTable<T extends SmartTableObject> {
 			}
 			return true;
 		}
+		if(connector.shouldAddField(e.getMessage())) {
+			try {
+				addFields();
+			} catch (Exception e2) {
+				e2.printStackTrace();
+				return false;
+			}
+			return true;
+		}
 		return false;
 	}
 	

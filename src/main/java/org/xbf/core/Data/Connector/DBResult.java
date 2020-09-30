@@ -1,10 +1,18 @@
 package org.xbf.core.Data.Connector;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.naming.directory.InvalidAttributeValueException;
+
+import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
+
+import ch.qos.logback.classic.Logger;
 
 public class DBResult {
 
@@ -12,18 +20,31 @@ public class DBResult {
 	public ArrayList<Object[]> rows = new ArrayList<>();
 	int rowIndex = -1;
 	
+	static final Logger logger = (Logger) LoggerFactory.getLogger(DBResult.class);
+	
 	public void addRow(Object[] row) {
 		if(row.length != columns.size())
 			throw new RuntimeException("Row length must be equal to the amount of columns");
 		rows.add(row);
+		String[] objects = new String[row.length];
+		for (int i = 0; i < row.length; i++) {
+			objects[i] = row[i] + "";
+			if(row[i] instanceof String) {
+				objects[i] = objects[i].trim();
+			}
+		}
+		logger.trace("Adding row: " + new Gson().toJson(objects));
 	}
 	
 	public void addColumn(String columnName) {
+		columnName = columnName.toLowerCase();
 		columns.add(columnName);
+		logger.trace("Adding column: " + columnName);
 	}
 	
 	public boolean next() {
-		if(rows.size() == rowIndex) return false;
+		if(rows.size() == rowIndex + 1) return false;
+		if(rows.size() == 0) return false;
 		rowIndex++;
 		return true;
 	}
@@ -45,6 +66,7 @@ public class DBResult {
 	 * @return The object at the selected column
 	 */
 	public Object getObject(String columnName) {
+		columnName = columnName.toLowerCase();
 		if(!columns.contains(columnName)) {
 			throw new NoSuchColumnException("The column name " + columnName + " is not valid.");
 		}
@@ -52,43 +74,73 @@ public class DBResult {
 	}
 	
 	public String getString(int columnIndex) {
-		return ((String) getObject(columnIndex));
+		return getObject(columnIndex) + "";
 	}
 	
 	public String getString(String columnName) {
-		return (String) getObject(columnName);
+		return getObject(columnName) + "";
 	}
 	
 	public int getInt(int columnIndex) {
-		return (Integer) getObject(columnIndex);
+		Object obj = getObject(columnIndex);
+		if(obj == null) return -1;
+		if(obj instanceof BigDecimal)
+			return ((BigDecimal) obj).intValue();
+		if(obj instanceof BigInteger)
+			return ((BigInteger) obj).intValue();
+		return (int) obj;
 	}
 	
 	public int getInt(String columnName) {
-		return (Integer) getObject(columnName);
+		Object obj = getObject(columnName);
+		if(obj == null) return -1;
+		if(obj instanceof BigDecimal)
+			return ((BigDecimal) obj).intValue();
+		if(obj instanceof BigInteger)
+			return ((BigInteger) obj).intValue();
+		return (int) obj;
 	}
 	
 	public long getLong(int columnIndex) {
-		return (Long) getObject(columnIndex);
+		Object obj = getObject(columnIndex);
+		if(obj == null) return -1;
+		return (long) obj;
 	}
 	
 	public long getLong(String columnName) {
-		return (Long) getObject(columnName);
+		Object obj = getObject(columnName);
+		if(obj == null) return -1;
+		return (long) obj;
 	}
 	
 	public double getDouble(int columnIndex) {
-		return (Double) getObject(columnIndex);
+		Object obj = getObject(columnIndex);
+		if(obj == null) return -1;
+		return (Double) obj;
 	}
 	
 	public double getDouble(String columnName) {
-		return (Double) getObject(columnName);
+		Object obj = getObject(columnName);
+		if(obj == null) return -1;
+		return (Double) obj;
 	}
 	
 	public boolean getBoolean(int columnIndex) {
-		return (Boolean) getObject(columnIndex);
+		Object obj = getObject(columnIndex);
+		if(obj == null) return false;
+		if(obj instanceof String) {
+			return Boolean.parseBoolean((String) obj);
+		}
+		return (boolean) obj;
 	}
 	
 	public boolean getBoolean(String columnName) {
-		return (Boolean) getObject(columnName);
+		Object obj = getObject(columnName);
+		if(obj == null) return false;
+		if(obj instanceof String) {
+			return Boolean.parseBoolean((String) obj);
+		}
+		return (boolean) obj;
 	}
 	
 	public static DBResult fromResultSet(ResultSet set) throws SQLException {

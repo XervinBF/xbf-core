@@ -52,7 +52,6 @@ public class CommandProcessor {
 	public static Response runRequest(Request req) {
 		long startTime = System.currentTimeMillis();
 		String prefix = req.user.getConfig("framework.prefix", DBConfig.getPrefix());
-		
 		if(!req.message.startsWith(prefix)) {
 			req.time.start("Framework.ChatHandlers");
 			for (ChatHandler chatHandler : XBF.getChatHandlers()) {

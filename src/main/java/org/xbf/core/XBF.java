@@ -157,7 +157,7 @@ public class XBF {
 	}
 	
 	public static Optional<Module> getModule(String name) {
-		return modules.stream().filter(m -> m.name.equals(name)).findFirst();
+		return modules.stream().filter(m -> m.name.equalsIgnoreCase(name)).findFirst();
 	}
 	
 	public static Optional<Module> getModuleForCommand(Command cmd) {
@@ -165,11 +165,11 @@ public class XBF {
 	}
 	
 	public static Optional<Module> getModuleForCommand(String cmd) {
-		return modules.stream().filter(m -> m.commands.stream().anyMatch(c -> c.command.equals(cmd))).findFirst();
+		return modules.stream().filter(m -> m.commands.stream().anyMatch(c -> c.command.equalsIgnoreCase(cmd))).findFirst();
 	}
 	
 	public static List<Module> getModulesWithCommand(String cmd) {
-		return modules.stream().filter(m -> m.commands.stream().anyMatch(c -> c.command.equals(cmd))).collect(Collectors.toList());
+		return modules.stream().filter(m -> m.commands.stream().anyMatch(c -> c.command.equalsIgnoreCase(cmd))).collect(Collectors.toList());
 	}
 
 	public static ArrayList<Handler> getHandlers() {
