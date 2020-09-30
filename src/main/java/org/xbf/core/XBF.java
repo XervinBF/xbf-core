@@ -38,6 +38,8 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 
@@ -97,8 +99,8 @@ public class XBF {
 	}
 	
 	public static void reloadConfig() {
-		DumperOptions dumperOptions = getDumperOptions();
-		Yaml yaml = new Yaml(dumperOptions);
+		ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+		yaml.findAndRegisterModules();
 		File configFile = new File("config.yml");
 		if(!configFile.exists()) {
 			config = new XConfiguration(true);
@@ -112,7 +114,12 @@ public class XBF {
 				e1.printStackTrace();
 				return;
 			}
-			config = yaml.load(configFileInputStream);
+			try {
+				config = yaml.readValue(configFileInputStream, XConfiguration.class);
+			} catch (IOException e1) {
+				logger.error("Failed to load config", e1);
+				e1.printStackTrace();
+			}
 			try {
 				configFileInputStream.close();
 			} catch (IOException e) {
@@ -136,10 +143,10 @@ public class XBF {
 	public static void saveConfig() {
 		logger.debug("Saving config to 'config.yml'");
 		File configFile = new File("config.yml");
-		DumperOptions dumperOptions = getDumperOptions();
-		Yaml dumper = new Yaml(dumperOptions);
+		ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+		yaml.findAndRegisterModules();
 		try {
-			Files.write(dumper.dump(config), configFile, Charset.defaultCharset());
+			yaml.writeValue(configFile, config);
 		} catch (IOException e) {
 			logger.error("Failed saving of new config", e);
 			e.printStackTrace();
