@@ -18,7 +18,7 @@ public class PGroup extends SmartTableObject {
 	
 	public String gId;
 	public String displayName;
-	public ArrayList<PGroupPermission> permissions;
+	public ArrayList<PGroupPermission> permissions = new ArrayList<>();;
 	
 	public static SmartTable<PGroup> getSmartTable() {
 		return new SmartTable<PGroup>("PGroups", PGroup.class);

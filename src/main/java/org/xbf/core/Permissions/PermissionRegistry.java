@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.LoggerFactory;
+import org.xbf.core.XBF;
 import org.xbf.core.Models.Permissions.PGroup;
 import org.xbf.core.Models.Permissions.PUser;
 import org.xbf.core.Models.Permissions.PUserPermission;
@@ -29,13 +30,15 @@ public class PermissionRegistry {
 		return gr;
 	}
 
-	public static PermissionUser getUser(String id) {
-		PUser u = PUser.getSmartTable().get(new FastMap<String, String>().add("uid", id));
+	public static PermissionUser getUser(int id) {
+		PUser u = PUser.getSmartTable().get(new FastMap<String, String>().add("uid", id + ""));
 		if (u == null) {
 			u = new PUser();
 			u.permissions = new ArrayList<PUserPermission>();
 			PUserPermission pup = new PUserPermission();
 			pup.keyIndex = "group.default";
+			if(id == XBF.getConfig().ownerUserId)
+				pup.keyIndex = "group.admin";
 			pup.value = true;
 			u.permissions.add(pup);
 			u.uid = id + "";
@@ -65,12 +68,6 @@ public class PermissionRegistry {
 	 */
 	public static void regPerms(String... strings) {
 		for (String string : strings) {
-			if (string.startsWith("-")) {
-				String cmdClass = Thread.currentThread().getStackTrace()[2].getClassName().replace("Command", "");
-				String cmd = cmdClass.substring("me.BL19.Xervin.s.".length());
-				String m = "module." + cmd + ".";
-				string = m + string.substring(1);
-			}
 			registerPermission(string.toLowerCase());
 		}
 	}

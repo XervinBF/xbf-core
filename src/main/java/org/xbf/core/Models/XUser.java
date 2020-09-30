@@ -36,9 +36,7 @@ public class XUser extends SmartTableObject {
 		if(prov == null) {
 			return null;
 		}
-		
-//		new Logger(XUser.class).debug(new Gson().toJson(prov));
-		
+				
 		return new XUser(Integer
 				.parseInt(prov.uid));
 	}
@@ -53,16 +51,15 @@ public class XUser extends SmartTableObject {
 		}
 		
 		UserProvider.setName(id, provider, StringUtils.replace(name, safeMap));
-//		new Logger(XUser.class).debug(new Gson().toJson(prov));
 		
 		return new XUser(Integer
 				.parseInt(prov.uid));
 	}
 	
 	public static HashMap<String, String> safeMap = new FastMap<String, String>()
-			.add("�", "o")
-			.add("�", "a")
-			.add("�", "a")
+			.add("ö", "o")
+			.add("å", "a")
+			.add("ä", "a")
 			.add("!", "")
 			.add("-", "")
 			.add(".", "")
@@ -95,7 +92,7 @@ public class XUser extends SmartTableObject {
 	
 	public boolean hasPermission(String permission) {
 		Stopwatch s = Stopwatch.startnew("USR." + id + ".PERM." + permission);
-		HashMap<String, Boolean> map = PermissionRegistry.getUser(id + "").getPermissionMap();
+		HashMap<String, Boolean> map = PermissionRegistry.getUser(id).getPermissionMap();
 		HashMap<String, Boolean> matching = new HashMap<>();
 		for (String string : map.keySet()) {
 			if(StringUtils.match(string, permission))
@@ -129,7 +126,6 @@ public class XUser extends SmartTableObject {
 	
 	public static synchronized XUser createNewUserAndAddProvider(String extId, String provider, String name) {
 		name = StringUtils.replace(name, safeMap);
-//		UserProvider prov = UserProvider.getSmartTable().get("extid='" + extId + "' AND provider='" + provider + "'");
 		UserProvider prov = UserProvider.getSmartTable().get(new FastMap<String, String>()
 				.add("extid", extId + "")
 				.add("provider", provider));
@@ -172,24 +168,14 @@ public class XUser extends SmartTableObject {
 	}
 
 	public void sendMessage(Response res) {
-//		for (String id : getProviderIds("Discord")) {
-//			DiscordHandler.SendResponse(res, DiscordHandler.client.getUserById(id).openPrivateChannel().complete());
-//		}
-//		
-//		for (String msteams : getProviderIds("msteams")) {
-////			BotFramework.SendResponse(new Gson().fromJson(MSConversation.getSmartTable().get("uid='" + msteams + "' AND provider='msteams'").conversationData, ConversationReference.class), res);
-//		}
-		
 		XBF.getHandlers().forEach(handler -> {
 			for (String handlerUserId : getProviderIds(handler.getAnnotation().providerName())) {
 				handler.sendMessage(handlerUserId, res);
 			}
 		});
-		
 	}
 
 	public String getProviderId(String provider) {
-//		UserProvider p = UserProvider.getSmartTable().get("uid='" + id + "' AND provider='" + provider + "'");
 		UserProvider p = UserProvider.getSmartTable().get(new FastMap<String, String>()
 				.add("uid", id + "")
 				.add("provider", provider));
@@ -199,7 +185,6 @@ public class XUser extends SmartTableObject {
 	
 	public List<String> getProviderIds(String provider) {
 		ArrayList<String> st = new ArrayList<>();
-//		for (UserProvider p : UserProvider.getSmartTable().getMultiple("uid='" + id + "' AND provider='" + provider + "'")) {
 		for (UserProvider p : UserProvider.getSmartTable().getMultiple(new FastMap<String, String>()
 				.add("uid", id + "")
 				.add("provider", provider))) {
@@ -209,7 +194,6 @@ public class XUser extends SmartTableObject {
 	}
 	
 	public List<UserProvider> getProviders() {
-//		return UserProvider.getSmartTable().getMultiple("uid='" + id + "'");
 		return UserProvider.getSmartTable().getMultiple(new FastMap<String, String>().add("uid", id + ""));
 	}
 
@@ -285,8 +269,7 @@ public class XUser extends SmartTableObject {
 		XUser usr = new XUser();
 		usr.id = uid;
 		getSmartTable().set(usr);
-		PermissionRegistry.getUser(uid + "");
-//		SQLConnection.RunUpdate(String.format("INSERT INTO Coins VALUES(%s,%s,%s,%s)", uid, Config.getConfig("eco.start"),0,0));
+		PermissionRegistry.getUser(uid);
 	}
 
 	public static boolean userExists(int id) {

@@ -24,13 +24,16 @@ import org.xbf.core.Data.Connector.DbType;
 import org.xbf.core.Data.Connector.IDBProvider;
 import org.xbf.core.Exceptions.AnnotationNotPresent;
 import org.xbf.core.Exceptions.HandlerLoadingFailed;
+import org.xbf.core.Install.XBFInstaller;
 import org.xbf.core.Messages.Request;
 import org.xbf.core.Models.XUser;
 import org.xbf.core.Module.Command;
 import org.xbf.core.Module.Module;
 import org.xbf.core.Plugins.Handler;
 import org.xbf.core.Plugins.PluginLoader;
+import org.xbf.core.Plugins.Service;
 import org.xbf.core.Plugins.XHandler;
+import org.xbf.core.Plugins.XService;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -51,6 +54,13 @@ public class XBF {
 	public static void main(String[] args) {
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
+		
+		if(args.length != 0) {
+			if(args[0].equalsIgnoreCase("install")) {
+				logger.info("Running XBF installer");
+				XBFInstaller.runInstaller();
+			}
+		}
 		
 		logger.info("Loading " + BOT_FRAMEWORK_NAME + " v" + XVI.version.version);
 		
@@ -245,8 +255,23 @@ public class XBF {
 		return provider; 
 	}
 
+	public static void registerService(Class<? extends Service> serviceClass) throws AnnotationNotPresent {
+		if(!serviceClass.isAnnotationPresent(XService.class)) {
+			logger.error("XService annotation not present on service class");
+			throw new AnnotationNotPresent("XService");
+		}
+		ServiceController.services.add(serviceClass);
+	}
+	
 	public static DumperOptions getYamlOptions() {
 		return getDumperOptions();
+	}
+	
+	public static XUser getOwnerUser() {
+		if(XUser.userExists(config.ownerUserId)) {
+			return new XUser(config.ownerUserId);
+		}
+		return null;
 	}
 	
 	

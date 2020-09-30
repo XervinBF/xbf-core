@@ -1,6 +1,6 @@
 package org.xbf.core.Exceptions;
 
-public class AnnotationNotPresent extends Exception {
+public class AnnotationNotPresent extends RuntimeException {
 
 	/**
 	 * 

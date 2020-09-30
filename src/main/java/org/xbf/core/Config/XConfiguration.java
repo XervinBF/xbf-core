@@ -8,6 +8,7 @@ public class XConfiguration {
 	public HashMap<String, XDBConfig> databases = new HashMap<>();
 	public String BOT_NAME = "Xervin";
 	public String pluginDirectory = "plugins";
+	public int ownerUserId = 1;
 	
 	public XConfiguration() {
 		if(this.databases == null)
