@@ -2,14 +2,13 @@ package org.xbf.core;
 
 public class XVI {
 	public static Version[] versions = new Version[] {
-			new Version("0.0.0", "Others"    , "2017-01-22 - 2020-09-25", "These are the old versions"),
-			new Version("5.0.1"        , "Krawlo"    , "2020-09-28", "- Framework base code"),
-			new Version("5.0.2"        , "Krawlo"    , "2020-09-29", "- Change to xbf-core"),
-			new Version("5.0.3"        , "Krawlo"    , "2020-09-29", "- Add Database provider registration"),
-			new Version("5.0.4"        , "Krawlo"    , "2020-09-29", "- Better plugin depend system"),
-			new Version("5.0.5"        , "Krawlo"    , "2020-09-29", "- DBProvider registration didn't work\n- Better plugin depends checking"),
-			new Version("5.0.6"        , "Krawlo"    , "2020-09-29", "- DBProvider can throw exceptions"),
-			new Version("5.0.7"        , "Krawlo"    , "2020-09-29", "- Make easier to implement database providers for databases that do not return a ResultSet"),
+			new Version("0.0.1"        , "Krawlo"    , "2020-09-28", "- Framework base code"),
+			new Version("0.0.2"        , "Krawlo"    , "2020-09-29", "- Change to xbf-core"),
+			new Version("0.0.3"        , "Krawlo"    , "2020-09-29", "- Add Database provider registration"),
+			new Version("0.0.4"        , "Krawlo"    , "2020-09-29", "- Better plugin depend system"),
+			new Version("0.0.5"        , "Krawlo"    , "2020-09-29", "- DBProvider registration didn't work\n- Better plugin depends checking"),
+			new Version("0.0.6"        , "Krawlo"    , "2020-09-29", "- DBProvider can throw exceptions"),
+			new Version("0.0.7"        , "Krawlo"    , "2020-09-29", "- Make easier to implement database providers for databases that do not return a ResultSet"),
 
 	};
 
