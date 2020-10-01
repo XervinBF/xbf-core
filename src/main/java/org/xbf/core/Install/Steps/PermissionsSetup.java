@@ -16,6 +16,7 @@ public class PermissionsSetup implements SetupStage {
 		grp.displayName="Admin";
 		PGroupPermission perm = new PGroupPermission();
 		perm.keyIndex = "*";
+		perm.value = true;
 		grp.permissions.add(perm);
 		
 		if(!PGroup.getSmartTable().hasWithQuery(new FastMap<String, String>().add("gId", "admin"))) {

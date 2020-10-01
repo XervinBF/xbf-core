@@ -47,7 +47,7 @@ public class XUser extends SmartTableObject {
 				.add("provider", provider));		
 		if(prov == null) {
 			
-			return XUser.createNewUserAndAddProvider(id + "", "Discord", StringUtils.replace(name, safeMap));
+			return XUser.createNewUserAndAddProvider(id + "", provider, StringUtils.replace(name, safeMap));
 		}
 		
 		UserProvider.setName(id, provider, StringUtils.replace(name, safeMap));

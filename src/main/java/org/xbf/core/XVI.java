@@ -11,7 +11,8 @@ public class XVI {
 			new Version("0.0.7"        , "Krawlo"    , "2020-09-29", "- Make easier to implement database providers for databases that do not return a ResultSet"),
 			new Version("0.0.8"        , "Krawlo"    , "2020-09-30", "- Plugin Configuration"),
 			new Version("0.0.9"        , "Krawlo"    , "2020-09-30", "- Small plugin config fixes\n- Improvments in DBResult\n- Add automatic field adding to SmartTable\n- Other small fixes"),
-			new Version("0.0.10"       , "Krawlo"    , "2020-09-30", "- Better language loading\n- Improved object mapping"),
+			new Version("0.0.10"       , "Krawlo"    , "2020-10-01", "- Better language loading\n- Improved object mapping"),
+			new Version("0.0.11"       , "Krawlo"    , "2020-10-02", "- Extended support for specific channels to send to"),
 
 			
 	};

@@ -1,6 +1,7 @@
 package org.xbf.core.Messages;
 
 import java.awt.Color;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,6 +18,11 @@ public class RichResponse {
 	public Color color;
 	public String footer;
 	public String description;
+	
+	public String footerImage;
+	public String image;
+	public String url;
+	public Date timestamp;
 	
 	/**
 	 * Creates a new {@link org.xbf.core.Messages.RichResponse RichResponse} with a Title. For no title use an empty string or null.
@@ -70,12 +76,52 @@ public class RichResponse {
 	}
 	
 	/**
+	 * Sets the image
+	 * @param imageUrl The url of the image to use with the footer
+	 * @return The current instance of {@link org.xbf.core.Messages.RichResponse RichResponse}
+	 */
+	public RichResponse setFooterImage(String imageUrl) {
+		this.footerImage = imageUrl;
+		return this;
+	}
+	
+	/**
 	 * Sets the description text
 	 * @param description The description text to use
 	 * @return The current instance of {@link org.xbf.core.Messages.RichResponse RichResponse}
 	 */
 	public RichResponse setDescription(String description) {
 		this.description = description;
+		return this;
+	}
+	
+	/**
+	 * Sets the url
+	 * @param url The url to use
+	 * @return The current instance of {@link org.xbf.core.Messages.RichResponse RichResponse}
+	 */
+	public RichResponse setUrl(String url) {
+		this.url = url;
+		return this;
+	}
+	
+	/**
+	 * Sets the image
+	 * @param imageUrl The url of the image to use
+	 * @return The current instance of {@link org.xbf.core.Messages.RichResponse RichResponse}
+	 */
+	public RichResponse setImage(String imageUrl) {
+		this.image = imageUrl;
+		return this;
+	}
+	
+	/**
+	 * Sets the timestamp of the message
+	 * @param timestamp The timestamp
+	 * @return The current instance of {@link org.xbf.core.Messages.RichResponse RichResponse}
+	 */
+	public RichResponse setTimestamp(Date timestamp) {
+		this.timestamp = timestamp;
 		return this;
 	}
 	

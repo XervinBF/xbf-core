@@ -447,8 +447,11 @@ public class SmartTable<T extends SmartTableObject> {
 
 	public int getNextId() {
 		try {
-			return connector.getMax(tb, "id") + 1;
+			int max = connector.getMax(tb, "id");
+			return max + 1;
 		} catch (Exception e) {
+			if(HandleException(e))
+				return getNextId();
 			e.printStackTrace();
 			return 0;
 		}

@@ -27,6 +27,7 @@ import org.xbf.core.Exceptions.HandlerLoadingFailed;
 import org.xbf.core.Exceptions.PluginLoadingFailed;
 import org.xbf.core.Install.XBFInstaller;
 import org.xbf.core.Messages.Request;
+import org.xbf.core.Messages.Response;
 import org.xbf.core.Models.XUser;
 import org.xbf.core.Module.Command;
 import org.xbf.core.Module.Module;
@@ -58,12 +59,7 @@ public class XBF {
 		ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 		root.setLevel(Level.INFO);
 		
-		if(args.length != 0) {
-			if(args[0].equalsIgnoreCase("install")) {
-				logger.info("Running XBF installer");
-				XBFInstaller.runInstaller();
-			}
-		}
+		
 		
 		logger.info("Loading " + BOT_FRAMEWORK_NAME + " v" + XVI.version.version);
 		
@@ -81,6 +77,16 @@ public class XBF {
 		} catch (PluginLoadingFailed e) {
 			logger.info("Halting..");
 			return;
+		}
+		
+		if(args.length != 0) {
+			if(args[0].equalsIgnoreCase("install")) {
+				logger.info("Running XBF installer");
+				XBFInstaller.runInstaller();
+				logger.info("Installer completed!");
+				logger.info("Restart XBF without the install argument to complete setup");
+				return;
+			}
 		}
 		
 		logger.info("Starting handlers");
@@ -216,6 +222,14 @@ public class XBF {
 		}
 		handlers.add(handler);
 		return handler;
+	}
+	
+	public static void sendMessageToChannel(String provider, String channelId, Response msg) {
+		for (Handler h : handlers) {
+			if(h.getAnnotation().providerName().equalsIgnoreCase(provider)) {
+				h.sendMessageToChannel(channelId, msg);
+			}
+		}
 	}
 	
 	public static ArrayList<ChatHandler> getChatHandlers() {

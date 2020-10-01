@@ -37,4 +37,8 @@ public class Handler {
 		throw new NotImplementedException("sendMessage not implemented for " + getAnnotation().providerName() + " provider");
 	}
 	
+	public void sendMessageToChannel(String channelId, Response message) {
+		throw new NotImplementedException("sendMessageToChannel not implemented for " + getAnnotation().providerName() + " provider");
+	}
+	
 }

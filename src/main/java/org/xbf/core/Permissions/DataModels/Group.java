@@ -63,14 +63,16 @@ public class Group {
 	
 	public HashMap<String, Boolean> getPermissionMap() {
 		HashMap<String, Boolean> map = new HashMap<>();
-		for (PGroupPermission pu : g.permissions) {
-			if(!pu.keyIndex.startsWith("group.")) continue;
-				map = new MapUtils<String, Boolean>().mergeMap(PermissionRegistry.getGroup(pu.keyIndex.replace("group.", "")).getPermissionMap(), map);
-		}
-		for (PGroupPermission pu : g.permissions) {
-			if(pu.keyIndex.startsWith("group.")) continue;
-			if(!map.containsKey(pu.keyIndex))
-				map.put(pu.keyIndex, pu.value);
+		if(g != null && g.permissions != null) {
+			for (PGroupPermission pu : g.permissions) {
+				if(!pu.keyIndex.startsWith("group.")) continue;
+					map = new MapUtils<String, Boolean>().mergeMap(PermissionRegistry.getGroup(pu.keyIndex.replace("group.", "")).getPermissionMap(), map);
+			}
+			for (PGroupPermission pu : g.permissions) {
+				if(pu.keyIndex.startsWith("group.")) continue;
+				if(!map.containsKey(pu.keyIndex))
+					map.put(pu.keyIndex, pu.value);
+			}
 		}
 		return map;
 	}
