@@ -24,6 +24,7 @@ import org.xbf.core.Data.Connector.DbType;
 import org.xbf.core.Data.Connector.IDBProvider;
 import org.xbf.core.Exceptions.AnnotationNotPresent;
 import org.xbf.core.Exceptions.HandlerLoadingFailed;
+import org.xbf.core.Exceptions.PluginLoadingFailed;
 import org.xbf.core.Install.XBFInstaller;
 import org.xbf.core.Messages.Request;
 import org.xbf.core.Models.XUser;
@@ -75,13 +76,21 @@ public class XBF {
 		logger.info("Starting bot as '" + config.BOT_NAME + "'");
 		
 		
-		PluginLoader.loadPlugins();
+		try {
+			PluginLoader.loadPlugins();
+		} catch (PluginLoadingFailed e) {
+			logger.info("Halting..");
+			return;
+		}
 		
 		logger.info("Starting handlers");
 		
 		handlers.forEach(h -> {
 			h.start();
 		});
+		
+		logger.info("Starting services");
+		ServiceController.XStartedTrigger();
 		
 		logger.info(BOT_FRAMEWORK_NAME + " has been started");
 		

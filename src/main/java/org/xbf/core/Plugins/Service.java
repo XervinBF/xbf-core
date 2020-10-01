@@ -9,7 +9,7 @@ public class Service {
 	public boolean once = false;
 	public boolean timeSync = false;
 	public Thread thread;
-	public String name = this.getClass().getSimpleName().replace("Service", "").toLowerCase();
+	public String name = this.getClass().getAnnotation(XService.class).name().toLowerCase();
 	public boolean allowMultipleInstances = false;
 	public Logger l;
 	public int id;

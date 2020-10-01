@@ -8,7 +8,7 @@ import org.xbf.core.Data.Annotations.IncludeAll;
 public class RunningService extends SmartTableObject{
 
 	public RunningService() {
-		super("Services");
+		super("XServices");
 	}
 	
 	public String serviceName;
@@ -16,7 +16,7 @@ public class RunningService extends SmartTableObject{
 	public String args;
 	
 	public static SmartTable<RunningService> getSmartTable() {
-		return new SmartTable<RunningService>("Services", RunningService.class);
+		return new SmartTable<RunningService>("XServices", RunningService.class);
 	}
 
 }

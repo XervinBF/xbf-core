@@ -307,8 +307,8 @@ public class SmartTable<T extends SmartTableObject> {
 		try {
 			return connector.has(tb, where);
 		} catch (Exception e) {
-			e.printStackTrace();
 			if(HandleException(e)) {
+				l.info("Triggering Retry!");
 				return hasWithQuery(where);
 			}
 			return false;

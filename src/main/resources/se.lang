@@ -1,0 +1,7 @@
+framework.error.title=Ett fel uppstod
+framework.error.desc=Ett %s uppstod
+framework.error.message=Felmeddelande
+
+generic.arg.unknown=Okänd parameter
+framework.perms.title=Ej behörig
+framework.perms.desc=Otillräckliga behörigheter

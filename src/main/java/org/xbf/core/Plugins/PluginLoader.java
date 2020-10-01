@@ -10,17 +10,13 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
-import org.reflections.Reflections;
-import org.reflections.scanners.ResourcesScanner;
-import org.reflections.scanners.SubTypesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.LoggerFactory;
-import org.xbf.core.XVI;
 import org.xbf.core.XBF;
+import org.xbf.core.XVI;
 import org.xbf.core.XVI.Version;
+import org.xbf.core.Exceptions.PluginLoadingFailed;
+import org.xbf.core.Plugins.xbfbuiltin.XBFBuiltinPlugin;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -36,13 +32,12 @@ public class PluginLoader {
 	static final Logger logger = (Logger) LoggerFactory.getLogger(PluginLoader.class);
 
 	static void registerXBFAsAPlugin() {
-		pluginClasses.put("xbf", null);
+		pluginClasses.put("xbf", XBFBuiltinPlugin.class);
 		pluginVersions.put("xbf", XVI.version.version);
-		plugins.put("xbf", null);
 		logger.debug("Registered 'xbf' as a plugin with version '" + XVI.version.version + "'");
 	}
 
-	public static void loadPlugins() {
+	public static void loadPlugins() throws PluginLoadingFailed {
 		logger.info("Loading external plugins");
 		File dir = new File(XBF.getConfig().pluginDirectory);
 		if (!dir.exists())
@@ -58,7 +53,7 @@ public class PluginLoader {
 		}
 		if (!runDependsCheck()) {
 			logger.error("Plugin depend check failed. Aborting plugin loading!");
-			return;
+			throw new PluginLoadingFailed();
 		}
 		logger.info("Loading plugins");
 		createInstances();

@@ -58,7 +58,9 @@ public class ServiceController {
 		String[] names = new String[services.size()];
 		int i = 0;
 		for (Class<? extends Service> s : services) {
-			names[i++] = getServiceNameFromClass(s);
+			names[i] = getServiceNameFromClass(s);
+			System.out.println("S" + i + ": " + names[i]);
+			i++;
 		}
 		return names;
 	}
@@ -115,6 +117,7 @@ public class ServiceController {
 	}
 	
 	public synchronized static Service startService(Service s, String[] args) {
+		s.name = getServiceNameFromClass(s.getClass());
 		if(!getServiceDataByName(s.name).multipleInstances() && IsRunning(s.name)) {
 			throw new RuntimeException("Can't start service marked with allowMultipleInstances as false with another instance running");
 		}
@@ -211,7 +214,8 @@ public class ServiceController {
 	
 	public synchronized static Class<? extends Service> getServiceByName(String name) {
 		for (Class<? extends Service> service : services) {
-			if(getServiceNameFromClass(service).equalsIgnoreCase(name))
+			String n = getServiceNameFromClass(service);
+			if(n.equalsIgnoreCase(name))
 				return service;
 		}
 		return null;

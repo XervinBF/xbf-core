@@ -1,3 +1,7 @@
 framework.error.title=An error occured
 framework.error.desc=A wild %s occured
 framework.error.message=Error message
+
+generic.arg.unknown=Unknown Argument
+framework.perms.title=No Permission
+framework.perms.desc=Not enough permissions
