@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,10 +39,17 @@ public class Dict {
 		logger = (Logger) LoggerFactory.getLogger("Dict." + str);
 		if (forceDefault)
 			str = DBConfig.getDefaultLang();
+
+		p = new Properties();
+		for (String s : DictionaryLoader.load(str)) {
+			p = new Properties(p);
+			try {
+				p.load(new StringReader(s));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		try {
-//			System.out.println("Loading " + str + " from file");
-//			if(Arguments.DEV)
-//				logger.debug("Loading dictionary from file " + str);
 			FileInputStream is = new FileInputStream("locals/" + str + ".lang");
 			InputStreamReader isr = new InputStreamReader(is, "UTF-8");
 			p.load(isr);

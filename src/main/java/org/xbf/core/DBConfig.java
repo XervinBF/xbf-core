@@ -88,11 +88,15 @@ public class DBConfig {
 	
 	
 	public static String getDefaultLang() {
-		return getConfig("dict");
+		String dict = getConfig("dict");
+		if(dict == null) dict = "en";
+		return dict;
 	}
 	
 	public static String getPrefix() {
-		return getConfig("framework.prefix");
+		String pref = getConfig("framework.prefix");
+		if(pref == null) pref = "*!";
+		return pref;
 	}
 	
 }

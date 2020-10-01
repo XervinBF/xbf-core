@@ -3,8 +3,11 @@ package org.xbf.core.Module;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.xbf.core.Module.Annotations.CommandName;
+import org.xbf.core.Module.Annotations.CommandPermission;
 import org.xbf.core.Module.Annotations.WithRestriction;
 import org.xbf.core.Module.Restrictions.Restriction;
+import org.xbf.core.Permissions.PermissionRegistry;
 
 public class Module {
 
@@ -31,6 +34,14 @@ public class Module {
 	}
 	
 	public Command registerCommand(Command command) {
+		if(command.getClass().isAnnotationPresent(CommandPermission.class)) {
+			command.basePermission = command.getClass().getAnnotation(CommandPermission.class).permission();
+		}
+		if(command.getClass().isAnnotationPresent(CommandName.class)) {
+			command.command = command.getClass().getAnnotation(CommandName.class).name();
+		}
+		if(command.basePermission != null)
+			PermissionRegistry.regPerms(command.basePermission);
 		commands.add(command);
 		return command;
 	}
@@ -50,8 +61,7 @@ public class Module {
 			cmd.enabled = options.enabled;
 			cmd.noPrefixCommand = options.noPrefixCommand;
 		}
-		commands.add(cmd);
-		return cmd;
+		return registerCommand(cmd);
 	}
 	
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import javax.naming.directory.InvalidAttributeValueException;
 
 import org.slf4j.LoggerFactory;
+import org.xbf.core.Data.AnyMapper;
 
 import com.google.gson.Gson;
 
@@ -76,73 +77,44 @@ public class DBResult {
 	}
 	
 	public String getString(int columnIndex) {
-		return getObject(columnIndex) + "";
+		return (String) AnyMapper.mapObject(getObject(columnIndex), String.class);
 	}
 	
 	public String getString(String columnName) {
-		return getObject(columnName) + "";
+		return (String) AnyMapper.mapObject(getObject(columnName), String.class);
+
 	}
 	
 	public int getInt(int columnIndex) {
-		Object obj = getObject(columnIndex);
-		if(obj == null) return -1;
-		if(obj instanceof BigDecimal)
-			return ((BigDecimal) obj).intValue();
-		if(obj instanceof BigInteger)
-			return ((BigInteger) obj).intValue();
-		return (int) obj;
+		return (int) AnyMapper.mapObject(getObject(columnIndex), Integer.class);
 	}
 	
 	public int getInt(String columnName) {
-		Object obj = getObject(columnName);
-		if(obj == null) return -1;
-		if(obj instanceof BigDecimal)
-			return ((BigDecimal) obj).intValue();
-		if(obj instanceof BigInteger)
-			return ((BigInteger) obj).intValue();
-		return (int) obj;
+		return (int) AnyMapper.mapObject(getObject(columnName), Integer.class);
 	}
 	
 	public long getLong(int columnIndex) {
-		Object obj = getObject(columnIndex);
-		if(obj == null) return -1;
-		return (long) obj;
+		return (long) AnyMapper.mapObject(getObject(columnIndex), Long.class);
 	}
 	
 	public long getLong(String columnName) {
-		Object obj = getObject(columnName);
-		if(obj == null) return -1;
-		return (long) obj;
+		return (long) AnyMapper.mapObject(getObject(columnName), Long.class);
 	}
 	
 	public double getDouble(int columnIndex) {
-		Object obj = getObject(columnIndex);
-		if(obj == null) return -1;
-		return (Double) obj;
+		return (double) AnyMapper.mapObject(getObject(columnIndex), Double.class);
 	}
 	
 	public double getDouble(String columnName) {
-		Object obj = getObject(columnName);
-		if(obj == null) return -1;
-		return (Double) obj;
+		return (double) AnyMapper.mapObject(getObject(columnName), Double.class);
 	}
 	
 	public boolean getBoolean(int columnIndex) {
-		Object obj = getObject(columnIndex);
-		if(obj == null) return false;
-		if(obj instanceof String) {
-			return Boolean.parseBoolean((String) obj);
-		}
-		return (boolean) obj;
+		return (boolean) AnyMapper.mapObject(getObject(columnIndex), Boolean.class);
 	}
 	
 	public boolean getBoolean(String columnName) {
-		Object obj = getObject(columnName);
-		if(obj == null) return false;
-		if(obj instanceof String) {
-			return Boolean.parseBoolean((String) obj);
-		}
-		return (boolean) obj;
+		return (boolean) AnyMapper.mapObject(getObject(columnName), Boolean.class);
 	}
 	
 	public static DBResult fromResultSet(ResultSet set) throws SQLException {

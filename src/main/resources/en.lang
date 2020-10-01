@@ -1,0 +1,3 @@
+framework.error.title=An error occured
+framework.error.desc=A wild %s occured
+framework.error.message=Error message

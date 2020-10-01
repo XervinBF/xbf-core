@@ -200,5 +200,9 @@ public class PluginLoader {
 			pl.onEnable();
 		}
 	}
+	
+	public static HashMap<String, XervinJavaPlugin> getPlugins() {
+		return plugins;
+	}
 
 }
