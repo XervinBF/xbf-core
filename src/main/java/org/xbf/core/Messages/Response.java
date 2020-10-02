@@ -72,6 +72,11 @@ public class Response {
 			r.footer = dict.partTransform(response.footer);
 		if(response.description != null)
 			r.description = dict.partTransform(response.description);
+		
+		r.footerImage = response.footerImage;
+		r.image = response.image;
+		r.timestamp = response.timestamp;
+		r.url = response.url;
 		r.color = response.color;
 		responses.add(r);
 		return this;
