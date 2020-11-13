@@ -28,6 +28,8 @@ public class PluginLoader {
 	static HashMap<String, String> pluginVersions = new HashMap<>();
 
 	static HashMap<String, XervinJavaPlugin> plugins = new HashMap<>();
+	
+	static ClassLoader pluginClassLoader = PluginLoader.class.getClassLoader();
 
 	static final Logger logger = (Logger) LoggerFactory.getLogger(PluginLoader.class);
 
@@ -86,7 +88,7 @@ public class PluginLoader {
 		URL loadPath = file.toURI().toURL();
 		URL[] classUrl = new URL[] { loadPath };
 		long t2 = System.currentTimeMillis();
-		ClassLoader cl = new URLClassLoader(classUrl, PluginLoader.class.getClassLoader());
+		ClassLoader cl = new URLClassLoader(classUrl, pluginClassLoader);
 		loadPluginsFromClassLoader(cl);
 	}
 
@@ -99,7 +101,6 @@ public class PluginLoader {
 			Enumeration<URL> urls = loader.getResources("resources/plugin.yml");
 			while(urls.hasMoreElements()) {
 				URL url = urls.nextElement();
-				File fl = new File(url.getFile());
 				Yaml yml = new Yaml(new Constructor(PluginInformationFile.class));
 				InputStream stream = url.openStream();
 				PluginInformationFile pif = yml.load(stream);
@@ -107,9 +108,10 @@ public class PluginLoader {
 				classes.add(loader.loadClass(pif.mainClass));
 			}
 		} catch (IOException e) {
+			logger.error("Failed to read plugin file", e);
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			logger.error("Plugin class not found!", e);
 		}
 
 		for (Class<?> class1 : classes) {
