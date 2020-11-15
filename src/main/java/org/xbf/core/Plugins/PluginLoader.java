@@ -82,30 +82,30 @@ public class PluginLoader {
 
 	public static void loadPlugin(File file) throws MalformedURLException {
 		logger.info("Loading plugin from " + file.getName());
-		long t1 = System.currentTimeMillis();
 		if (!file.exists())
 			return;
 		URL loadPath = file.toURI().toURL();
 		URL[] classUrl = new URL[] { loadPath };
-		long t2 = System.currentTimeMillis();
 		ClassLoader cl = new URLClassLoader(classUrl, pluginClassLoader);
-		loadPluginsFromClassLoader(cl);
+		pluginClassLoader = cl;
+		loadPluginsFromClassLoader(cl, classUrl);
 	}
 
-	static void loadPluginsFromClassLoader(ClassLoader loader) {
+	static void loadPluginsFromClassLoader(ClassLoader loader, URL[] classUrl) {
 		
-		
+		Thread.currentThread().setContextClassLoader(pluginClassLoader);
 		List<Class<?>> classes = new ArrayList<>();
 		
 		try {
-			Enumeration<URL> urls = loader.getResources("resources/plugin.yml");
+			ClassLoader cl = new URLClassLoader(classUrl);
+			Enumeration<URL> urls = cl.getResources("resources/plugin.yml");
 			while(urls.hasMoreElements()) {
 				URL url = urls.nextElement();
 				Yaml yml = new Yaml(new Constructor(PluginInformationFile.class));
 				InputStream stream = url.openStream();
 				PluginInformationFile pif = yml.load(stream);
 				stream.close();
-				classes.add(loader.loadClass(pif.mainClass));
+				classes.add(pluginClassLoader.loadClass(pif.mainClass));
 			}
 		} catch (IOException e) {
 			logger.error("Failed to read plugin file", e);
