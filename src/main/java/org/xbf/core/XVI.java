@@ -14,6 +14,7 @@ public class XVI {
 			new Version("0.0.10"       , "Krawlo"    , "2020-10-01", "- Better language loading\n- Improved object mapping"),
 			new Version("0.0.11"       , "Krawlo"    , "2020-10-02", "- Extended support for specific channels to send to"),
 			new Version("0.0.12"       , "Krawlo"    , "2020-11-15", "- PluginLoading with one classloader chain\n- Change startup orders to allow for easier integration of other plugins"),
+			new Version("0.0.13"       , "Krawlo"    , "2020-12-06", "- Compilation bug"),
 
 			
 	};

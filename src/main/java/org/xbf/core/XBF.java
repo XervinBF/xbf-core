@@ -85,12 +85,7 @@ public class XBF {
 			h.start();
 		});
 		
-		try {
-			PluginLoader.startPlugins();
-		} catch (PluginLoadingFailed e) {
-			logger.info("Halting..");
-			return;
-		}
+		PluginLoader.startPlugins();
 		
 		if(args.length != 0) {
 			if(args[0].equalsIgnoreCase("install")) {
