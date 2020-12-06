@@ -32,3 +32,6 @@ hs_err_pid*
 
 # Xervin Secure Files
 config.yml
+
+*.mp3
+sb

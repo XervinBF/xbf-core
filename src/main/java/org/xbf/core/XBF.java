@@ -79,6 +79,19 @@ public class XBF {
 			return;
 		}
 		
+		logger.info("Starting handlers");
+		
+		handlers.forEach(h -> {
+			h.start();
+		});
+		
+		try {
+			PluginLoader.startPlugins();
+		} catch (PluginLoadingFailed e) {
+			logger.info("Halting..");
+			return;
+		}
+		
 		if(args.length != 0) {
 			if(args[0].equalsIgnoreCase("install")) {
 				logger.info("Running XBF installer");
@@ -89,11 +102,7 @@ public class XBF {
 			}
 		}
 		
-		logger.info("Starting handlers");
 		
-		handlers.forEach(h -> {
-			h.start();
-		});
 		
 		logger.info("Starting services");
 		ServiceController.XStartedTrigger();

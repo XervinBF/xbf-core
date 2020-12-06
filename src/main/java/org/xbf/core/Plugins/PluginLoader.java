@@ -64,8 +64,6 @@ public class PluginLoader {
 			if(pl != null)
 				pl.register();
 		});
-		logger.info("Starting plugins!");
-		startPlugins();
 		logger.info("Plugins loaded!");
 	}
 
@@ -191,7 +189,7 @@ public class PluginLoader {
 		return mayContinueLoading;
 	}
 
-	static void startPlugins() {
+	public static void startPlugins() {
 		for (XervinJavaPlugin pl : plugins.values()) {
 			if(pl == null) continue;
 			pl.onEnable();

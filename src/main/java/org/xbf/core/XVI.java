@@ -13,6 +13,7 @@ public class XVI {
 			new Version("0.0.9"        , "Krawlo"    , "2020-09-30", "- Small plugin config fixes\n- Improvments in DBResult\n- Add automatic field adding to SmartTable\n- Other small fixes"),
 			new Version("0.0.10"       , "Krawlo"    , "2020-10-01", "- Better language loading\n- Improved object mapping"),
 			new Version("0.0.11"       , "Krawlo"    , "2020-10-02", "- Extended support for specific channels to send to"),
+			new Version("0.0.12"       , "Krawlo"    , "2020-11-15", "- PluginLoading with one classloader chain\n- Change startup orders to allow for easier integration of other plugins"),
 
 			
 	};
