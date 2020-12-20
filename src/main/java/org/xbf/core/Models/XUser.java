@@ -130,7 +130,7 @@ public class XUser extends SmartTableObject {
 				.add("extid", extId + "")
 				.add("provider", provider));
 		if(prov != null) return getFromProvider(extId, provider);
-		int id = XUser.getSmartTable().getNextId();
+		int id = XUser.getSmartTable().getNextId("id");
 		createUser(id, name);
 		UserProvider p = new UserProvider();
 		p.extid = extId;

@@ -1,7 +1,6 @@
 package org.xbf.core.Data;
 
 import java.lang.reflect.Field;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,12 +20,13 @@ import org.xbf.core.Utils.Map.MapUtils;
 
 import ch.qos.logback.classic.Logger;
 
-public class SmartTable<T extends SmartTableObject> {
+public class SmartTable<T extends SmartTableObjectNoKey> {
 
 	public boolean followIds = true;
 	public String addition = " ORDER BY id ASC";
 	public ObjectCache c;
 	public static boolean UseMSSQL = true;
+
 	public String getMax(String type) {
 		return connector.getMaxValueForField(type);
 	}
@@ -35,19 +35,19 @@ public class SmartTable<T extends SmartTableObject> {
 	Logger l;
 
 	String tb;
-	Class<? extends SmartTableObject> ref;
-	
+	Class<? extends SmartTableObjectNoKey> ref;
+
 	String database = null;
-	
+
 	DBConnector connector;
 
-	public SmartTable(String tableName, Class<? extends SmartTableObject> refClass) {
+	public SmartTable(String tableName, Class<? extends SmartTableObjectNoKey> refClass) {
 		tb = tableName;
 		ref = refClass;
 		c = new ObjectCache("SMTBL." + tableName, 60000 * 8);
 		l = (Logger) LoggerFactory.getLogger("SMTBL - " + tableName);
 		IncludeAllFields = ref.isAnnotationPresent(IncludeAll.class);
-		if(ref.isAnnotationPresent(Database.class)) {
+		if (ref.isAnnotationPresent(Database.class)) {
 			database = refClass.getAnnotation(Database.class).value();
 		}
 		connector = new DBConnector(database);
@@ -67,16 +67,16 @@ public class SmartTable<T extends SmartTableObject> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public T Parse(DBResult r)
-			throws IllegalArgumentException, IllegalAccessException, SQLException, InstantiationException, SmartTableException {
+	public T Parse(DBResult r) throws IllegalArgumentException, IllegalAccessException, SQLException,
+			InstantiationException, SmartTableException {
 		try {
 			if (ref == null)
 				return null;
-			if (!SmartTableObject.class.isAssignableFrom(ref))
+			if (!SmartTableObjectNoKey.class.isAssignableFrom(ref))
 				return null;
 			if (!r.next())
 				return null;
-			SmartTableObject o = null;
+			SmartTableObjectNoKey o = null;
 			o = ref.newInstance();
 			for (Field f : o.getClass().getFields()) {
 				if (!IncludeField(f))
@@ -87,15 +87,15 @@ public class SmartTable<T extends SmartTableObject> {
 //					System.out.println(o.getClass().getSimpleName() + " - " + fnam + " - " + r.findColumn(fnam));
 					Class<?> type = f.getType();
 					String typeName = type.getName();
-					boolean sto = SmartTableObject.class.isAssignableFrom(type);
-					boolean inverseSto = type.isAssignableFrom(SmartTableObject.class);
+					boolean sto = SmartTableObjectNoKey.class.isAssignableFrom(type);
+					boolean inverseSto = type.isAssignableFrom(SmartTableObjectNoKey.class);
 					boolean arrList = ArrayList.class.isAssignableFrom(type);
 					boolean inverseArrList = type.isAssignableFrom(ArrayList.class);
-					
-					
+
 					if (typeName.contains("String")) {
 						String value = r.getString(fnam);
-						if(value != null) value = value.trim();
+						if (value != null)
+							value = value.trim();
 						f.set(o, value);
 					} else if (typeName.contains("int")) {
 						f.set(o, r.getInt(fnam));
@@ -105,25 +105,30 @@ public class SmartTable<T extends SmartTableObject> {
 						f.set(o, r.getDouble(fnam));
 					} else if (typeName.contains("boolean")) {
 						f.set(o, r.getBoolean(fnam));
-					} else if (SmartTableObject.class.isAssignableFrom(type)) {
-						int smtblid = r.getInt(fnam);
-						f.set(o, new SmartTable<SmartTableObject>(
-								((SmartTableObject) f.getType().newInstance()).getTable(),
-								(Class<? extends SmartTableObject>) f.getType()).get(new FastMap<String, String>()
-										.add("id", smtblid + "").getMap()));
+					} else if (SmartTableObjectNoKey.class.isAssignableFrom(type)) {
+						String smtblid = r.getString(fnam);
+						SmartTableObjectNoKey nsmtbl = (SmartTableObjectNoKey) f.getType().newInstance();
+						Field keyFieldN = getKeyField(nsmtbl);
+						f.set(o, new SmartTable<SmartTableObjectNoKey>(
+								nsmtbl.getTable(),
+								(Class<? extends SmartTableObjectNoKey>) f.getType())
+										.get(new FastMap<String, String>().add(keyFieldN.getName(), smtblid + "").getMap()));
 					} else if (ArrayList.class.isAssignableFrom(f.getType())) {
 						Class<? extends SmartTableArrayObject> mapping = o.getArrayMappings().get(fnam);
 						ArrayList<Object> a = new ArrayList<Object>();
+						Field keyFieldRef = getKeyField(o);
+						SmartTableArrayObject nstao = mapping.newInstance();
 						SmartTable<SmartTableArrayObject> t = new SmartTable<SmartTableArrayObject>(
-								(mapping.newInstance()).getTable(), mapping);
-						for (SmartTableArrayObject object : t.getMultiple(new FastMap<String, String>().add("parent", r.getInt("id") + "").getMap())) {
+								nstao.getTable(), mapping);
+						for (SmartTableArrayObject object : t.getMultiple(
+								new FastMap<String, String>().add("parent", r.getString(keyFieldRef.getName()) + "").getMap())) {
 							a.add(object);
 						}
 						f.set(o, a);
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					if(ex.getMessage().equals("The column name " + f.getName() + " is not valid.")) {
+					if (ex.getMessage().equals("The column name " + f.getName() + " is not valid.")) {
 						// Invalid table structure
 						addFields();
 						throw new SmartTableException("[RETRY]");
@@ -138,8 +143,8 @@ public class SmartTable<T extends SmartTableObject> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<T> ParseAll(DBResult r)
-			throws IllegalArgumentException, IllegalAccessException, InstantiationException, SQLException, SmartTableException {
+	public List<T> ParseAll(DBResult r) throws IllegalArgumentException, IllegalAccessException, InstantiationException,
+			SQLException, SmartTableException {
 		ArrayList<T> tarr = new ArrayList<T>();
 		Object obj = Parse(r);
 		while (obj != null) {
@@ -149,13 +154,64 @@ public class SmartTable<T extends SmartTableObject> {
 		return tarr;
 	}
 
+	Object getKey(Object obj) {
+		try {
+			return getKeyField(obj).get(obj);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	void setKey(Object obj, Object value) {
+		try {
+			getKeyField(obj).set(obj, value);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
+	Field getKeyField(Object cls) {
+		Field idField = null;
+		for (Field f : cls.getClass().getFields()) {
+			if (f.isAnnotationPresent(org.xbf.core.Data.Annotations.Key.class))
+				try {
+					return f;
+				} catch (IllegalArgumentException e) {
+					l.warn("Failed to access key field of " + cls.getClass().getSimpleName());
+					e.printStackTrace();
+				}
+			if (f.getName().equalsIgnoreCase("id"))
+				idField = f;
+		}
+		try {
+			return idField;
+		} catch (IllegalArgumentException e) {
+			l.warn("Failed to access fallback id field of " + cls.getClass().getSimpleName());
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public List<T> getAll() {
 		try {
 			List<T> res = ParseAll(connector.getData(tb));
-			Collections.sort(res, new Comparator<SmartTableObject>() {
+			Collections.sort(res, new Comparator<SmartTableObjectNoKey>() {
 				@Override
-				public int compare(SmartTableObject o1, SmartTableObject o2) {
-					return o1.id < o2.id ? 1 : o1.id == o2.id ? 0 : -1;
+				public int compare(SmartTableObjectNoKey o1, SmartTableObjectNoKey o2) {
+					Object k1 = getKey(o1);
+					Object k2 = getKey(o2);
+					if (k1 instanceof String && k2 instanceof String) {
+						String s1 = (String) k1;
+						String s2 = (String) k2;
+						return s1.compareTo(s2);
+					} else if (k1 instanceof Integer && k2 instanceof Integer) {
+						int id1 = (int) k1;
+						int id2 = (int) k2;
+						return id1 < id2 ? 1 : id1 == id2 ? 0 : -1;
+					}
+					// TODO: Implement more compares
+					return 0;
 				}
 			});
 			return res;
@@ -164,7 +220,7 @@ public class SmartTable<T extends SmartTableObject> {
 			if (HandleException(e)) {
 				return getAll();
 			}
-			if(e.getMessage().equals("[RETRY]")) {
+			if (e.getMessage().equals("[RETRY]")) {
 				return getAll();
 			}
 		}
@@ -176,14 +232,14 @@ public class SmartTable<T extends SmartTableObject> {
 		for (Field f : ref.getFields()) {
 			if (!IncludeField(f))
 				continue;
-			if(IncludeField(f))
+			if (IncludeField(f))
 				map.add(f.getName(), classNameToDBType(f.getType().getSimpleName()));
 		}
 		return map.getMap();
 	}
 
 	public HashMap<String, String> getCurrentDBFields() throws Exception {
-		return connector.getFields(tb); 
+		return connector.getFields(tb);
 	}
 
 	public void addFields() throws Exception {
@@ -196,7 +252,8 @@ public class SmartTable<T extends SmartTableObject> {
 
 		for (String fieldName : expected.keySet()) {
 			String type = expected.get(fieldName);
-			l.warn("Performing column migration! Adding field: field '" + fieldName + "' of type '" + type + "' to table '" + tb + "'");
+			l.warn("Performing column migration! Adding field: field '" + fieldName + "' of type '" + type
+					+ "' to table '" + tb + "'");
 			connector.addFieldToTable(tb, fieldName, type);
 		}
 	}
@@ -213,7 +270,7 @@ public class SmartTable<T extends SmartTableObject> {
 	public List<T> getMultiple(FastMap<String, String> where) {
 		return getMultiple(where.getMap());
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<T> getMultiple(HashMap<String, String> where) {
 		try {
@@ -224,13 +281,13 @@ public class SmartTable<T extends SmartTableObject> {
 			if (HandleException(e)) {
 				return getMultiple(where);
 			}
-			if(e.getMessage().equals("[RETRY]")) {
+			if (e.getMessage().equals("[RETRY]")) {
 				return getMultiple(where);
 			}
 		}
 		return new ArrayList<T>();
 	}
-	
+
 	public T get(FastMap<String, String> where) {
 		return get(where.getMap());
 	}
@@ -244,7 +301,7 @@ public class SmartTable<T extends SmartTableObject> {
 			if (HandleException(e)) {
 				return get(where);
 			}
-			if(e.getMessage().equals("[RETRY]")) {
+			if (e.getMessage().equals("[RETRY]")) {
 				return get(where);
 			}
 		}
@@ -262,7 +319,7 @@ public class SmartTable<T extends SmartTableObject> {
 			}
 			return true;
 		}
-		if(connector.shouldAddField(e.getMessage())) {
+		if (connector.shouldAddField(e.getMessage())) {
 			try {
 				addFields();
 			} catch (Exception e2) {
@@ -273,17 +330,17 @@ public class SmartTable<T extends SmartTableObject> {
 		}
 		return false;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public T insert(Object obj) {
-		int objid = -1;
+		Object objid = -1;
 		if (followIds) {
 			try {
-				objid = obj.getClass().getField("id").getInt(obj);
-				if (hasWithQuery(new FastMap<String, String>()
-						.add("id", objid + "")))
+				Field f = getKeyField(obj);
+				objid = f.get(obj);
+				if (hasWithQuery(new FastMap<String, String>().add(f.getName(), objid + "")))
 					return null;
-			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			} catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
 				if (HandleException(e)) {
 					return insert(obj);
 				}
@@ -293,7 +350,7 @@ public class SmartTable<T extends SmartTableObject> {
 		try {
 			connector.insertData(tb, datamap);
 		} catch (Exception e) {
-			if(HandleException(e))
+			if (HandleException(e))
 				return insert(obj);
 		}
 		return (T) obj;
@@ -302,12 +359,12 @@ public class SmartTable<T extends SmartTableObject> {
 	public boolean hasWithQuery(FastMap<String, String> where) {
 		return hasWithQuery(where.getMap());
 	}
-	
+
 	public boolean hasWithQuery(HashMap<String, String> where) {
 		try {
 			return connector.has(tb, where);
 		} catch (Exception e) {
-			if(HandleException(e)) {
+			if (HandleException(e)) {
 				l.info("Triggering Retry!");
 				return hasWithQuery(where);
 			}
@@ -315,23 +372,24 @@ public class SmartTable<T extends SmartTableObject> {
 		}
 	}
 
-	public HashMap<String, String> getSqlDataMap(Object obj, int objid) {
+	public HashMap<String, String> getSqlDataMap(Object obj, Object objid) {
 		HashMap<String, String> data = new HashMap<>();
 		for (Field f : obj.getClass().getFields()) {
 			if (!IncludeField(f))
 				continue;
-			if (SmartTableObject.class.isAssignableFrom(f.getType())) {
+			if (SmartTableObjectNoKey.class.isAssignableFrom(f.getType())) {
 				try {
 					Object smo = f.get(obj);
 					if (smo == null)
 						continue;
-					String table = ((SmartTableObject) smo).getTable();
-					SmartTable<SmartTableObject> t = new SmartTable<SmartTableObject>(table,
-							(Class<? extends SmartTableObject>) f.getType());
-					int id = t.set(f.get(obj)).id;
+					String table = ((SmartTableObjectNoKey) smo).getTable();
+					SmartTable<SmartTableObjectNoKey> t = new SmartTable<SmartTableObjectNoKey>(table,
+							(Class<? extends SmartTableObjectNoKey>) f.getType());
+
+					Object id = getKey(t.set(f.get(obj)));
 					data.put(f.getName(), id + "");
 				} catch (Exception e) {
-					System.err.println("[SET] Failed to parse " + f.getName() + " as SmartTableObject from class "
+					System.err.println("[SET] Failed to parse " + f.getName() + " as SmartTableObjectNoKey from class "
 							+ obj.getClass().getSimpleName() + ". Maybe.");
 					e.printStackTrace();
 				}
@@ -342,42 +400,44 @@ public class SmartTable<T extends SmartTableObject> {
 							.get(obj);
 					if (a == null || a.size() == 0)
 						continue;
-					ArrayList<Integer> oldObjects = new ArrayList<Integer>();
-					ArrayList<Integer> newObjects = new ArrayList<Integer>();
+					ArrayList<Object> oldObjects = new ArrayList<Object>();
+					ArrayList<Object> newObjects = new ArrayList<Object>();
 					SmartTableArrayObject first = a.get(0);
-					Class<? extends SmartTableObject> c = first.getClass();
+					Class<? extends SmartTableObjectNoKey> c = first.getClass();
 					SmartTable<SmartTableArrayObject> t = new SmartTable<SmartTableArrayObject>(first.getTable(), c);
 //					for (SmartTableArrayObject p : t.getMultiple("parent=" + objid)) {
-					for (SmartTableArrayObject p : t.getMultiple(
-							new FastMap<String, String>()
-							.add("parent", objid + "")
-							.getMap())) {
-						oldObjects.add(p.id);
+					for (SmartTableArrayObject p : t
+							.getMultiple(new FastMap<String, String>().add("parent", objid + "").getMap())) {
+						oldObjects.add(getKey(p));
 					}
 					for (SmartTableArrayObject b : a) {
 						String q = "parent=" + objid + " AND " + b.getQuery();
-						SmartTableArrayObject stao = t.get(new MapUtils<String, String>().mergeMap(b.getQuery(), new FastMap<String, String>()
-								.add("parent", objid + "").getMap()));
+						SmartTableArrayObject stao = t.get(new MapUtils<String, String>().mergeMap(b.getQuery(),
+								new FastMap<String, String>().add("parent", objid + "").getMap()));
 						if (stao != null)
-							b.id = stao.id;
+							setKey(b, getKey(stao));
 						b.parent = objid;
-						newObjects.add(b.id);
+						newObjects.add(getKey(b));
 						t.set(b);
 					}
 
-					for (Integer integer : newObjects) {
+					for (Object integer : newObjects) {
 						oldObjects.remove(integer);
 					}
-					for (Integer integer : oldObjects) {
-						t.delete(new SmartTableArrayObject(t.tb) {
-							{
-								id = integer;
-							}
-						});
+					for (Object integer : oldObjects) {
+						Object newInstance = null;
+						try {
+							newInstance = a.get(0).getClass().newInstance();
+						} catch (InstantiationException e) {
+							e.printStackTrace();
+						}
+						if(newInstance == null) continue;
+						setKey(newInstance, integer);
+						t.delete(newInstance);
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
-				}
+				} 
 			} else {
 				try {
 					data.put(f.getName(), f.get(obj) + "");
@@ -393,10 +453,10 @@ public class SmartTable<T extends SmartTableObject> {
 	public T update(Object obj) {
 		HashMap<String, String> data;
 		try {
-			data = getSqlDataMap(obj, obj.getClass().getField("id").getInt(obj));
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e1) {
+			data = getSqlDataMap(obj, getKey(obj));
+		} catch (IllegalArgumentException | SecurityException e1) {
 			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain an int field named 'id'.");
+					"Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
 
 		String vals = "";
@@ -405,11 +465,13 @@ public class SmartTable<T extends SmartTableObject> {
 		}
 		vals = vals.substring(0, vals.length() - 1);
 		try {
-			connector.updateData(tb, data, new FastMap<String, String>().add("id", obj.getClass().getField("id").getInt(obj) + "").getMap());
+			Field key = getKeyField(obj);
+			connector.updateData(tb, data,
+					new FastMap<String, String>().add(key.getName(), key.get(obj) + "").getMap());
 		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 			e.printStackTrace();
 			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain an int field named 'id'.");
+					"Entity " + obj.getClass().getName() + " does not contain a key field.");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -418,24 +480,25 @@ public class SmartTable<T extends SmartTableObject> {
 
 	@SuppressWarnings("unchecked")
 	public T set(Object obj) {
-		int id = -1;
+		Object id = null;
+		Field key = getKeyField(obj);
 		try {
-			id = obj.getClass().getField("id").getInt(obj);
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			id = getKey(obj);
+		} catch (IllegalArgumentException | SecurityException e) {
 			e.printStackTrace();
 			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain an int field named 'id'.");
+					"Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
-		if (id == 0) {
-			id = getNextId();
+		if (id == null) {
+			id = getNextId(key.getName());
 			try {
-				obj.getClass().getField("id").setInt(obj, id);
-			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				setKey(obj, id);
+			} catch (IllegalArgumentException | SecurityException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		if (hasWithQuery(new FastMap<String, String>().add("id", id + ""))) {
+
+		if (hasWithQuery(new FastMap<String, String>().add(key.getName(), id + ""))) {
 			update(obj);
 		} else {
 			insert(obj);
@@ -445,13 +508,13 @@ public class SmartTable<T extends SmartTableObject> {
 
 	}
 
-	public int getNextId() {
+	public int getNextId(String fName) {
 		try {
-			int max = connector.getMax(tb, "id");
+			int max = connector.getMax(tb, fName);
 			return max + 1;
 		} catch (Exception e) {
-			if(HandleException(e))
-				return getNextId();
+			if (HandleException(e))
+				return getNextId(fName);
 			e.printStackTrace();
 			return 0;
 		}
@@ -459,16 +522,17 @@ public class SmartTable<T extends SmartTableObject> {
 
 	@SuppressWarnings("unchecked")
 	public T delete(Object obj) {
-		int id = -1;
+		Object id = null;
+		Field key = getKeyField(obj);
 		try {
-			id = obj.getClass().getField("id").getInt(obj);
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			id = getKey(obj);
+		} catch (IllegalArgumentException | SecurityException e) {
 			e.printStackTrace();
 			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain an int field named 'id'.");
+					"Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
 		try {
-			connector.delete(tb, new FastMap<String, String>().add("id", id + "").getMap());
+			connector.delete(tb, new FastMap<String, String>().add(key.getName(), id + "").getMap());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

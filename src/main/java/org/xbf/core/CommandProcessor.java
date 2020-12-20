@@ -50,6 +50,7 @@ public class CommandProcessor {
 	}
 
 	public static Response runRequest(Request req) {
+		try {
 		long startTime = System.currentTimeMillis();
 		String prefix = req.user.getConfig("framework.prefix", DBConfig.getPrefix());
 		if(!req.message.startsWith(prefix)) {
@@ -90,6 +91,10 @@ public class CommandProcessor {
 		execTime = execTime * 0.8 + (System.currentTimeMillis() - startTime) * 0.2;
 		
 		return res;
+		} catch(Exception ex) {
+			l.error("Execution error", ex);
+			return null;
+		}
 	}
 
 	private static Response handle(Request req) {
@@ -157,7 +162,7 @@ public class CommandProcessor {
 							);
 		
 		// 
-
+		System.out.println("Empty response");
 		return null;
 
 	}

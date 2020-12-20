@@ -11,7 +11,7 @@ public class SmartTableArrayObject extends SmartTableObject {
 	}
 	
 	@Include
-	public int parent;
+	public Object parent;
 	
 	public HashMap<String, String> getQuery() {
 		return null;

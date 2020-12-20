@@ -4,36 +4,23 @@ import java.util.HashMap;
 
 import org.xbf.core.Data.Annotations.Ignore;
 import org.xbf.core.Data.Annotations.Include;
+import org.xbf.core.Data.Annotations.Key;
 
-public class SmartTableObject {
+public class SmartTableObject extends SmartTableObjectNoKey {
 
-	@Include
-	public int id;
-	
-	@Ignore
-	public String smrttable;
-	@Ignore
-	public HashMap<String, Class<? extends SmartTableArrayObject>> smrtmappings;
 	public SmartTableObject(String table) {
-		this(table, null);
+		super(table);
 	}
 	
 	public SmartTableObject(String table, HashMap<String, Class<? extends SmartTableArrayObject>> map) {
-		this.smrttable = table;
-		this.smrtmappings = map;
+		super(table, map);
 	}
 
-	public String getTable() {
-		return smrttable;
-	}
+	@Include
+	@Key
+	public int id;
 	
-	public HashMap<String, Class<? extends SmartTableArrayObject>> getArrayMappings() {
-		return smrtmappings;
-	}
-	
-	public void objectLoaded() {
-		
-	}
+
 	
 	
 	
