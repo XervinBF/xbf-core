@@ -15,7 +15,7 @@ import ch.qos.logback.classic.Logger;
 public class DBConnector {
 
 	static final Logger logger = (Logger) LoggerFactory.getLogger(DBConnector.class);
-	
+	String dbname;
 	XDBConfig config;
 	
 	public String connectionString;
@@ -29,6 +29,7 @@ public class DBConnector {
 	}
 	
 	public DBConnector(String dbname) {
+		this.dbname = dbname;
 		if(dbname == null) {
 			XDBConfig db = XBF.getConfig().defaultDatabase;
 			connectionString = db.connectionString;
@@ -53,12 +54,20 @@ public class DBConnector {
 		}
 	}
 	
+	static HashMap<String, IDBProvider> dbProviders = new HashMap<String, IDBProvider>();
+	
 	IDBProvider provider;
 	
 	IDBProvider getConnector() {
 		if(provider == null) {
-			provider = XBF.getDatabaseProvider(dbtype);
-			provider.openConnection(config);
+			String key = dbname == null ? "xbf-default" : dbname;
+			if(dbProviders.containsKey(key)) {
+				provider = dbProviders.get(key);
+			} else {
+				provider = XBF.getDatabaseProvider(dbtype);
+				provider.openConnection(config);
+				dbProviders.put(key,provider);
+			}
 		}
 		return provider;
 	}
