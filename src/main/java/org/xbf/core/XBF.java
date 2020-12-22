@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.slf4j.LoggerFactory;
 import org.xbf.core.ChatHandlers.ChatHandler;
 import org.xbf.core.ChatHandlers.ChatHandlerResult;
+import org.xbf.core.ChatHandlers.FormChatHandler;
 import org.xbf.core.Config.XConfiguration;
 import org.xbf.core.Data.DBConnector;
 import org.xbf.core.Data.NXDBConnector;
@@ -71,7 +72,7 @@ public class XBF {
 		}
 		logger.info("Starting bot as '" + config.BOT_NAME + "'");
 		
-		
+		registerChatHandler(new FormChatHandler());
 		try {
 			PluginLoader.loadPlugins();
 		} catch (PluginLoadingFailed e) {
@@ -107,6 +108,7 @@ public class XBF {
 		logger.info("Started bot as name '" + config.BOT_NAME + "'");
 		
 		saveConfig();
+		
 				
 	}
 	

@@ -77,7 +77,8 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			if (!r.next())
 				return null;
 			SmartTableObjectNoKey o = null;
-			o = ref.newInstance();
+			
+			o = ref.getConstructor().newInstance();
 			for (Field f : o.getClass().getFields()) {
 				if (!IncludeField(f))
 					continue;
@@ -138,6 +139,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			o.objectLoaded();
 			return (T) o;
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -489,7 +491,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			throw new RuntimeException(
 					"Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
-		if (id == null) {
+		if (id == null || (id instanceof Integer && (int) id == 0)) {
 			id = getNextId(key.getName());
 			try {
 				setKey(obj, id);
