@@ -16,7 +16,7 @@ public class UserProvider extends SmartTableObject {
 	public String uid;
 	public String provider;
 	public String extid;
-	public Username name;
+	public String name;
 	
 	public static SmartTable<UserProvider> getSmartTable() {
 		return new SmartTable<UserProvider>("UserProviders", UserProvider.class);
@@ -26,10 +26,7 @@ public class UserProvider extends SmartTableObject {
 		UserProvider p = UserProvider.getSmartTable().get(new FastMap<String, String>()
 				.add("extid", extid + "")
 				.add("provider", provider));
-		if(p.name == null)
-			p.name = new Username();
-		p.name.provider = provider;
-		p.name.name = StringUtils.replace(name, XUser.safeMap);
+		p.name = name;
 		getSmartTable().set(p);
 	}
 	

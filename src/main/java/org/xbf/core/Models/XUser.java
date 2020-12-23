@@ -79,10 +79,10 @@ public class XUser extends SmartTableObject {
 			if(priority < pnum) {
 				String perm = namePriorityPermissions.get(p.provider);
 				if(perm == null || perm.trim() == "") {
-					highestPriority = p.name.name;
+					highestPriority = p.name;
 					pnum = priority;
 				} else if(StringUtils.match(permission, "userdata.name." + p.provider)) {
-					highestPriority = p.name.name;
+					highestPriority = p.name;
 					pnum = priority;
 				}
 			}
