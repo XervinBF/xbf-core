@@ -7,6 +7,8 @@ import org.xbf.core.Data.Annotations.Ignore;
 public class SmartTableObjectNoKey {
 
 	@Ignore
+	public Object smrtref;
+	@Ignore
 	public String smrttable;
 	@Ignore
 	public HashMap<String, Class<? extends SmartTableArrayObject>> smrtmappings;
