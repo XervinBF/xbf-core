@@ -95,15 +95,18 @@ public class XUser extends SmartTableObject {
 		HashMap<String, Boolean> map = PermissionRegistry.getUser(id).getPermissionMap();
 		HashMap<String, Boolean> matching = new HashMap<>();
 		for (String string : map.keySet()) {
+			l.trace("User " + id + " has permission grant: " + string);
 			if(StringUtils.match(string, permission))
 				matching.put(string, map.get(string));
 		}
 		if(matching.size() == 0) {
 			s.stop();
+			l.debug("User " + id + " permission check on " + permission + ": false");
 			return false;
 		}
 		boolean res = matching.get(StringMatcher.mostMatching(permission, matching.keySet().toArray(new String[0])));
 		s.stop();
+		l.debug("User " + id + " permission check on " + permission + ": " + res);
 		return res;
 	}
 	//             Permission          Configuration
