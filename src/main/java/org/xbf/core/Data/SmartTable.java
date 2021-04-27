@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 import org.xbf.core.Cache.ObjectCache;
@@ -17,6 +18,8 @@ import org.xbf.core.Data.Annotations.IncludeAll;
 import org.xbf.core.Data.Connector.DBResult;
 import org.xbf.core.Utils.Map.FastMap;
 import org.xbf.core.Utils.Map.MapUtils;
+
+import com.google.gson.Gson;
 
 import ch.qos.logback.classic.Logger;
 
@@ -77,7 +80,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			if (!r.next())
 				return null;
 			SmartTableObjectNoKey o = null;
-			
+
 			o = ref.getConstructor().newInstance();
 			o.smrtref = ref.getConstructor().newInstance();
 			for (Field f : o.getClass().getFields()) {
@@ -98,6 +101,8 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						String value = r.getString(fnam);
 						if (value != null)
 							value = value.trim();
+						if(value != null && !value.isBlank() && value.equals("null"))
+							value = null;
 						f.set(o, value);
 						f.set(o.smrtref, value);
 					} else if (typeName.contains("int")) {
@@ -120,10 +125,9 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						String smtblid = r.getString(fnam);
 						SmartTableObjectNoKey nsmtbl = (SmartTableObjectNoKey) f.getType().newInstance();
 						Field keyFieldN = getKeyField(nsmtbl);
-						Object value = new SmartTable<SmartTableObjectNoKey>(
-								nsmtbl.getTable(),
-								(Class<? extends SmartTableObjectNoKey>) f.getType())
-										.get(new FastMap<String, String>().add(keyFieldN.getName(), smtblid + "").getMap());
+						Object value = new SmartTable<SmartTableObjectNoKey>(nsmtbl.getTable(),
+								(Class<? extends SmartTableObjectNoKey>) f.getType()).get(
+										new FastMap<String, String>().add(keyFieldN.getName(), smtblid + "").getMap());
 						f.set(o, value);
 						f.set(o.smrtref, value);
 					} else if (ArrayList.class.isAssignableFrom(f.getType())) {
@@ -131,10 +135,10 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						ArrayList<Object> a = new ArrayList<Object>();
 						Field keyFieldRef = getKeyField(o);
 						SmartTableArrayObject nstao = mapping.newInstance();
-						SmartTable<SmartTableArrayObject> t = new SmartTable<SmartTableArrayObject>(
-								nstao.getTable(), mapping);
-						for (SmartTableArrayObject object : t.getMultiple(
-								new FastMap<String, String>().add("parent", r.getString(keyFieldRef.getName()) + "").getMap())) {
+						SmartTable<SmartTableArrayObject> t = new SmartTable<SmartTableArrayObject>(nstao.getTable(),
+								mapping);
+						for (SmartTableArrayObject object : t.getMultiple(new FastMap<String, String>()
+								.add("parent", r.getString(keyFieldRef.getName()) + "").getMap())) {
 							a.add(object);
 						}
 						f.set(o, a);
@@ -187,6 +191,8 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 	}
 
 	Field getKeyField(Object cls) {
+		if (cls == null)
+			return null;
 		Field idField = null;
 		for (Field f : cls.getClass().getFields()) {
 			if (f.isAnnotationPresent(org.xbf.core.Data.Annotations.Key.class))
@@ -415,7 +421,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 							.get(obj);
 					if (a == null || a.size() == 0)
 						continue;
-					ArrayList<Object> oldObjects = new ArrayList<Object>();
+					List<Object> oldObjects = new ArrayList<Object>();
 					ArrayList<Object> newObjects = new ArrayList<Object>();
 					SmartTableArrayObject first = a.get(0);
 					Class<? extends SmartTableObjectNoKey> c = first.getClass();
@@ -439,6 +445,13 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 					for (Object integer : newObjects) {
 						oldObjects.remove(integer);
 					}
+					
+					oldObjects = oldObjects.stream().filter(x -> newObjects.stream().anyMatch(y -> y == x)).collect(Collectors.toList());
+					
+					try {
+						oldObjects = oldObjects.stream().filter(x -> newObjects.stream().anyMatch(y -> new Gson().toJson(x).equals(new Gson().toJson(y)))).collect(Collectors.toList());
+					} catch (Exception ex) {}
+					
 					for (Object integer : oldObjects) {
 						Object newInstance = null;
 						try {
@@ -446,13 +459,14 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						} catch (InstantiationException e) {
 							e.printStackTrace();
 						}
-						if(newInstance == null) continue;
+						if (newInstance == null)
+							continue;
 						setKey(newInstance, integer);
 						t.delete(newInstance);
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
 					e.printStackTrace();
-				} 
+				}
 			} else {
 				try {
 					data.put(f.getName(), f.get(obj) + "");
@@ -471,30 +485,34 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 		try {
 			dataObj = getSqlDataMap(obj, getKey(obj));
 		} catch (IllegalArgumentException | SecurityException e1) {
-			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain a key field.");
+			throw new RuntimeException("Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
 
 		// Get the previously cached version of the db image
-		HashMap<String, String> dataRef;
-		Object smrtref = ((SmartTableObjectNoKey)obj).smrtref;
-		try {
-			dataRef = getSqlDataMap(smrtref, getKey(smrtref));
-		} catch (IllegalArgumentException | SecurityException e1) {
-			throw new RuntimeException(
-					"Entity " + smrtref.getClass().getName() + " does not contain a key field.");
-		}
-		
-		// Get the fields that have been changed and put them to the map
-		HashMap<String, String> data = new HashMap<String, String>();
-		
-		for (String s : dataObj.keySet()) {
-			if(!dataObj.get(s).equals(dataRef.get(s))) {
-				data.put(s, dataObj.get(s));
+		HashMap<String, String> dataRef = null;
+		Object smrtref = ((SmartTableObjectNoKey) obj).smrtref;
+		if (smrtref != null) {
+			try {
+				dataRef = getSqlDataMap(smrtref, getKey(smrtref));
+			} catch (IllegalArgumentException | SecurityException e1) {
+				throw new RuntimeException("Entity " + smrtref.getClass().getName() + " does not contain a key field.");
 			}
 		}
-		
-		if(data.size() != 0) {
+
+		// Get the fields that have been changed and put them to the map
+		HashMap<String, String> data = new HashMap<String, String>();
+
+		if (dataRef == null)
+			data = dataObj;
+		else {
+			for (String s : dataObj.keySet()) {
+				if (!dataObj.get(s).equals(dataRef.get(s))) {
+					data.put(s, dataObj.get(s));
+				}
+			}
+		}
+
+		if (data.size() != 0) {
 			// Only update the changed values
 			try {
 				Field key = getKeyField(obj);
@@ -502,8 +520,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						new FastMap<String, String>().add(key.getName(), key.get(obj) + "").getMap());
 			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 				e.printStackTrace();
-				throw new RuntimeException(
-						"Entity " + obj.getClass().getName() + " does not contain a key field.");
+				throw new RuntimeException("Entity " + obj.getClass().getName() + " does not contain a key field.");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -519,8 +536,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			id = getKey(obj);
 		} catch (IllegalArgumentException | SecurityException e) {
 			e.printStackTrace();
-			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain a key field.");
+			throw new RuntimeException("Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
 		if (id == null || (id instanceof Integer && (int) id == 0)) {
 			id = getNextId(key.getName());
@@ -561,8 +577,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 			id = getKey(obj);
 		} catch (IllegalArgumentException | SecurityException e) {
 			e.printStackTrace();
-			throw new RuntimeException(
-					"Entity " + obj.getClass().getName() + " does not contain a key field.");
+			throw new RuntimeException("Entity " + obj.getClass().getName() + " does not contain a key field.");
 		}
 		try {
 			connector.delete(tb, new FastMap<String, String>().add(key.getName(), id + "").getMap());
