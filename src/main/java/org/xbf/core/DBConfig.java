@@ -13,33 +13,8 @@ public class DBConfig {
 	public static boolean DEV = false;
 	
 	
-	static ObjectCache configCache = new ObjectCache("XConfig", 60000 * 60 * 6); // 6 hours
-
-
-	public static String[] userConfig;
-	
-	public static String[] userConfigDesc;
-	
-	public static HashMap<String, String> userConfigDescriptors = new HashMap<>();
-	
-	public static void reloadSetVariables() {
-		userConfig = new String[] {
-				"framework.prefix",
-				"framework.commandcompletion",
-				"dict",
-		};
+	static ObjectCache configCache = new ObjectCache("XConfig", 60000 * 60 * 6); // 6 hours	
 		
-		userConfigDesc = new String[] {
-				"Prefix for Xervin commands",
-				"Xervin will guess what your command are",
-				getDictOptions(),
-		};
-		userConfigDescriptors.put("framework.prefix", "Prefix f�r Einstein Kommandon");
-		userConfigDescriptors.put("framework.commandcompletion", "Einstein kommer att gissa ditt kommando (felstavningar)");
-		userConfigDescriptors.put("dict", getDictOptions());
-
-		userConfigDescriptors.put("framework.timings", "Display Timings after commands (true/false)");
-	}
 	
 	private static String getDictOptions() {
 		String str = "";
