@@ -23,6 +23,13 @@ public class AnyMapper {
 				return ((BigInteger) obj).intValue();
 			if(obj instanceof Integer)
 				return (int) obj;
+			if(obj instanceof Boolean)
+				return ((Boolean) obj) ? 1 : 0;
+			if(obj instanceof String) {
+				String str = (String) obj;
+				if(str.equals("true")) return 1;
+				if(str.equals("false")) return 0;
+			}
 			try {
 				return Integer.parseInt((obj + "").trim());
 			} catch (Exception ex) {
