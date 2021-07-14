@@ -22,6 +22,10 @@ public class XervinJavaPlugin {
 	 */
 	public void register() {}
 	
+	public boolean registerPermission(String perm) {
+		return false;
+	}
+	
 	public XPlugin getPluginInfo() {
 		return getClass().getAnnotation(XPlugin.class);
 	}

@@ -1,0 +1,7 @@
+permissions:
+    xbf.permissions.edit.all:
+        name: Permissions - Base edit
+        description: The base permission that grants permission to edit a permission if the permission was not changed.
+    framework.timings:
+        name: Timings - View
+        description: Allows the user to use the config settings framework.timings

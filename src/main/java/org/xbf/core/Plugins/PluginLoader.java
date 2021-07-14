@@ -16,6 +16,7 @@ import org.xbf.core.XBF;
 import org.xbf.core.XVI;
 import org.xbf.core.XVI.Version;
 import org.xbf.core.Exceptions.PluginLoadingFailed;
+import org.xbf.core.Models.Permissions.Permission;
 import org.xbf.core.Plugins.xbfbuiltin.XBFBuiltinPlugin;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -38,6 +39,8 @@ public class PluginLoader {
 		pluginVersions.put("xbf", XVI.version.version);
 		logger.debug("Registered 'xbf' as a plugin with version '" + XVI.version.version + "'");
 	}
+	
+	
 
 	public static void loadPlugins() throws PluginLoadingFailed {
 		logger.info("Loading external plugins");
@@ -76,6 +79,15 @@ public class PluginLoader {
 				logger.error("Failed to create plugin instance for " + plName, e);
 			}
 		}
+	}
+	
+	public static XervinJavaPlugin getPlugin(String name) {
+		for (String pluginName : plugins.keySet()) {
+			if(pluginName.equalsIgnoreCase(name)) {
+				return plugins.get(pluginName);
+			}
+		}
+		return null;
 	}
 
 	public static void loadPlugin(File file) throws MalformedURLException {

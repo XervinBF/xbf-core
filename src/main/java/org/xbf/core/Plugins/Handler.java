@@ -1,5 +1,7 @@
 package org.xbf.core.Plugins;
 
+import java.util.List;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.LoggerFactory;
 import org.xbf.core.Messages.Response;
@@ -39,6 +41,10 @@ public class Handler {
 	
 	public void sendMessageToChannel(String channelId, Response message) {
 		throw new NotImplementedException("sendMessageToChannel not implemented for " + getAnnotation().providerName() + " provider");
+	}
+	
+	public List<String> getProviderGroups(int xbfUserId) {
+		throw new NotImplementedException("getProviderGroups not implemented for " + getAnnotation().providerName() + " provider");
 	}
 	
 }

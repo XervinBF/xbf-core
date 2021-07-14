@@ -9,6 +9,8 @@ public class XConfiguration {
 	public String BOT_NAME = "Xervin";
 	public String pluginDirectory = "plugins";
 	public int ownerUserId = 1;
+	public boolean createPermissionsAutomaticallyIfNotCreatedByPlugin = true;
+	public XCacheDurations cacheDurations;
 	
 	public XConfiguration() {
 		if(this.databases == null)

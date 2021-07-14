@@ -4,11 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.xbf.core.XBF;
 import org.xbf.core.Cache.ObjectCache;
+import org.xbf.core.Models.UserProvider;
 import org.xbf.core.Models.XUser;
 import org.xbf.core.Models.Permissions.PUser;
 import org.xbf.core.Models.Permissions.PUserPermission;
 import org.xbf.core.Permissions.PermissionRegistry;
+import org.xbf.core.Plugins.Handler;
 import org.xbf.core.Utils.Map.MapUtils;
 import org.xbf.core.Utils.Timings.Stopwatch;
 
@@ -20,7 +23,8 @@ public class PermissionUser {
 	public PUser p;
 	public String id;
 	public String displayName;
-	public static ObjectCache c = new ObjectCache("PermCache", 0);
+	public static ObjectCache c = new ObjectCache("PermCache", XBF.getConfig().cacheDurations.permissionFlatCacheDuration);
+	public static ObjectCache cMap = new ObjectCache("PermCacheMap", XBF.getConfig().cacheDurations.permissionMapCacheDuration);
 	
 	public PermissionUser(PUser usr) {
 		id = usr.uid;
@@ -46,22 +50,38 @@ public class PermissionUser {
 			prm.value = pr.value;
 			p.add(prm);
 		}
-		this.p.permissions = p;		
+		this.p.permissions = p;	
+		c.set(id, null);
+		cMap.set(id, null);
 		PUser.getSmartTable().set(this.p);
 		return this;
 	}
 	
 	public HashMap<String, Boolean> getPermissionMap() {
+		String ch = (String) cMap.get(id);
+		if(ch != null) {
+			return new Gson().fromJson(ch, new TypeToken<HashMap<String, Boolean>>() {
+			}.getType());
+		}
 		HashMap<String, Boolean> map = new HashMap<>();
 		for (PUserPermission pu : p.permissions) {
 			if(!pu.keyIndex.startsWith("group.")) continue;
 				map = new MapUtils<String, Boolean>().mergeMap(PermissionRegistry.getGroup(pu.keyIndex.replace("group.", "")).getPermissionMap(), map);
+		}
+		for (Handler handler : XBF.getHandlers()) {
+			try {
+				for (String group : handler.getProviderGroups(Integer.parseInt(id))) {
+					map = new MapUtils<String, Boolean>().mergeMap(PermissionRegistry.getGroup(group).getPermissionMap(), map);
+				}
+			} catch (Exception e) {
+			}
 		}
 		for (PUserPermission pu : p.permissions) {
 			if(pu.keyIndex.startsWith("group.")) continue;
 			if(!map.containsKey(pu.keyIndex))
 				map.put(pu.keyIndex, pu.value);
 		}
+		cMap.set(id, new Gson().toJson(map));
 		return map;
 	}
 	

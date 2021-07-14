@@ -14,6 +14,7 @@ import org.xbf.core.Data.SmartTable;
 import org.xbf.core.Data.SmartTableObject;
 import org.xbf.core.Messages.Response;
 import org.xbf.core.Models.Config.UserConfig;
+import org.xbf.core.Models.Permissions.Permission;
 import org.xbf.core.Permissions.PermissionRegistry;
 import org.xbf.core.Utils.Language.Dict;
 import org.xbf.core.Utils.Map.FastMap;
@@ -91,6 +92,7 @@ public class XUser extends SmartTableObject {
 	}
 	
 	public boolean hasPermission(String permission) {
+		Permission.validatePermissionExists(permission);
 		Stopwatch s = Stopwatch.startnew("USR." + id + ".PERM." + permission);
 		HashMap<String, Boolean> map = PermissionRegistry.getUser(id).getPermissionMap();
 		HashMap<String, Boolean> matching = new HashMap<>();

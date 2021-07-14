@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,11 +16,14 @@ import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import org.xbf.core.ChatHandlers.ChatHandler;
 import org.xbf.core.ChatHandlers.ChatHandlerResult;
 import org.xbf.core.ChatHandlers.FormChatHandler;
+import org.xbf.core.Config.XCacheDurations;
 import org.xbf.core.Config.XConfiguration;
+import org.xbf.core.Config.XDBConfig;
 import org.xbf.core.Data.DBConnector;
 import org.xbf.core.Data.NXDBConnector;
 import org.xbf.core.Data.Connector.DbType;
@@ -30,13 +35,19 @@ import org.xbf.core.Install.XBFInstaller;
 import org.xbf.core.Messages.Request;
 import org.xbf.core.Messages.Response;
 import org.xbf.core.Models.XUser;
+import org.xbf.core.Models.Permissions.Permission;
 import org.xbf.core.Module.Command;
 import org.xbf.core.Module.Module;
 import org.xbf.core.Plugins.Handler;
 import org.xbf.core.Plugins.PluginLoader;
+import org.xbf.core.Plugins.PluginPermissionFile;
+import org.xbf.core.Plugins.PluginResourceReader;
 import org.xbf.core.Plugins.Service;
 import org.xbf.core.Plugins.XHandler;
 import org.xbf.core.Plugins.XService;
+import org.xbf.core.Plugins.XervinJavaPlugin;
+import org.xbf.core.Plugins.PluginPermissionFile.PluginDefinedPermission;
+import org.xbf.core.Utils.Language.DictionaryLoader;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
@@ -116,6 +127,10 @@ public class XBF {
 		if(config == null) {
 			reloadConfig();
 		}
+		if(config.cacheDurations == null)
+			config.cacheDurations = new XCacheDurations();
+		if(config.defaultDatabase == null)
+			config.defaultDatabase = new XDBConfig();
 		return config;
 	}
 	
@@ -308,6 +323,98 @@ public class XBF {
 			return new XUser(config.ownerUserId);
 		}
 		return null;
+	}
+	
+	public static boolean tryRegisterPermission(String permission) {
+		try {
+			InputStream stream1 = DictionaryLoader.class.getClassLoader().getResourceAsStream("permissions/xbf.yml");
+			if(stream1 == null)
+				stream1 = DictionaryLoader.class.getClassLoader().getResourceAsStream("resources/permissions/xbf.yml");
+			String theString = IOUtils.toString(stream1, "UTF-8");
+			ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+			yaml.findAndRegisterModules();
+			PluginPermissionFile permissionFile = yaml.readValue(theString, PluginPermissionFile.class);
+			if(permissionFile.permissions.containsKey(permission)) {
+				PluginDefinedPermission pluginDefinedPermission = permissionFile.permissions.get(permission);
+				if(pluginDefinedPermission.editPermission != null) {
+					Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description, pluginDefinedPermission.editPermission);
+				} else {
+					Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description);
+				}
+				return true;
+			}
+		} catch (Exception e) {
+			logger.error("Permission file reading failed: xbf.yml", e);
+		}
+		
+		try {
+			for (File file : PluginResourceReader.getFilesFoldersFromAllPlugins("/resources/permissions")) {
+				try {
+					InputStream stream = new FileInputStream(file);
+					String theString = IOUtils.toString(stream, "UTF-8"); 
+					ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+					yaml.findAndRegisterModules();
+					PluginPermissionFile permissionFile = yaml.readValue(theString, PluginPermissionFile.class);
+					if(permissionFile.permissions.containsKey(permission)) {
+						PluginDefinedPermission pluginDefinedPermission = permissionFile.permissions.get(permission);
+						if(pluginDefinedPermission.editPermission != null) {
+							Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description, pluginDefinedPermission.editPermission);
+						} else {
+							Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description);
+						}
+						return true;
+					}
+				} catch (Exception ex) {
+					logger.error("Permission file reading failed: " + file.getName(), ex);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed to locate permission files", e);
+		}
+		
+		try {
+			for (String pluginName : PluginLoader.getPlugins().keySet()) {
+				try {
+					InputStream stream1 = DictionaryLoader.class.getClassLoader().getResourceAsStream("permissions/" + pluginName + ".yml");
+					if(stream1 == null)
+						stream1 = DictionaryLoader.class.getClassLoader().getResourceAsStream("resources/permissions/" + pluginName + ".yml");
+					String theString = IOUtils.toString(stream1, "UTF-8");
+					ObjectMapper yaml = new ObjectMapper(new YAMLFactory());
+					yaml.findAndRegisterModules();
+					PluginPermissionFile permissionFile = yaml.readValue(theString, PluginPermissionFile.class);
+					if(permissionFile.permissions.containsKey(permission)) {
+						PluginDefinedPermission pluginDefinedPermission = permissionFile.permissions.get(permission);
+						if(pluginDefinedPermission.editPermission != null) {
+							Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description, pluginDefinedPermission.editPermission);
+						} else {
+							Permission.registerPermissionIfNotFound(permission, pluginDefinedPermission.name, pluginDefinedPermission.description);
+						}
+						return true;
+					}
+				} catch (Exception ex) {
+//					logger.error("Permission file reading failed: " + pluginName + ".yml", ex);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed to locate permission files", e);
+		}
+		
+		
+		
+		if(permission.startsWith("plugin.")) {
+			String plugin = permission.split("\\.")[1];
+			if(PluginLoader.getPlugin(plugin).registerPermission(permission))
+				return true;
+		}
+		for (XervinJavaPlugin plugin : PluginLoader.getPlugins().values()) {
+			if(plugin.registerPermission(permission))
+				return true;
+		}
+		if(XBF.getConfig().createPermissionsAutomaticallyIfNotCreatedByPlugin) {
+			Permission.registerPermissionIfNotFound(permission, "Unnamed - " + permission, "No plugin registered the permission by request so the permission was registered automatically. To change this behaviour set createPermissionsAutomaticallyIfNotCreatedByPlugin to false in config.yml.");
+			return true;
+		}
+		return false;
 	}
 	
 	
