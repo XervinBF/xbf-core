@@ -101,7 +101,7 @@ public class SmartTable<T extends SmartTableObjectNoKey> {
 						String value = r.getString(fnam);
 						if (value != null)
 							value = value.trim();
-						if(value != null && !value.isBlank() && value.equals("null"))
+						if(value == null || value.trim().equals("") || value.equals("null"))
 							value = null;
 						f.set(o, value);
 						f.set(o.smrtref, value);
