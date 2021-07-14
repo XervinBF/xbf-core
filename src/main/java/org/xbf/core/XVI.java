@@ -16,7 +16,8 @@ public class XVI {
 			new Version("0.0.12"       , "Krawlo"    , "2020-11-15", "- PluginLoading with one classloader chain\n- Change startup orders to allow for easier integration of other plugins"),
 			new Version("0.0.13"       , "Krawlo"    , "2020-12-06", "- Compilation bug"),
 			new Version("0.0.14"       , "Krawlo"    , "2020-12-20", "- SmartTable: Set custom key fields for tables"),
-			
+			new Version("0.1.0"        , "Krawlo"    , "2021-07-14", "- SmartTable: Better updates\n- Improved Permissions system"),
+
 	};
 
 	public static Version version = versions[versions.length - 1];
